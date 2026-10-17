@@ -1,0 +1,19 @@
+name: dabir-cleanup
+on:
+  schedule: [{cron: '23 * * * *'}]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          git fetch origin jobs && git worktree add data origin/jobs -B jobs || { echo "no jobs branch yet"; exit 0; }
+          python3 cleanup.py
+          cd data && git config user.name bot && git config user.email bot@users.noreply.github.com
+          git add -A results && git commit -m "cleanup" && git push origin jobs || true
+        env:
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
