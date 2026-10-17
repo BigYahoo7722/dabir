@@ -8,7 +8,6 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:Vazirmatn,Tahoma,sans-serif;background:var(--stone);color:var(--bone);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
 background-image:radial-gradient(ellipse at top,#3a3226 0,transparent 60%)}
-.stairs{height:18px;background:linear-gradient(90deg,var(--gold) 0 12px,transparent 12px 24px) 0 0/24px 6px repeat-x,linear-gradient(90deg,var(--sand) 0 12px,transparent 12px 24px) 12px 6px/24px 6px repeat-x,linear-gradient(90deg,var(--gold) 0 12px,transparent 12px 24px) 0 12px/24px 6px repeat-x}
 header{text-align:center;padding:28px 16px 18px}
 header svg{width:120px;fill:none;stroke:var(--gold);stroke-width:2.5}
 h1{margin:6px 0 4px;font-weight:800;font-size:clamp(1.8rem,6vw,2.8rem);color:var(--sand);letter-spacing:.02em}
@@ -46,7 +45,6 @@ footer{text-align:center;padding:18px;opacity:.7;font-size:.9rem;direction:ltr}
 .hb{position:absolute;inset-block-start:calc(env(safe-area-inset-top) + 26px);inset-inline-start:14px;width:auto;margin:0;padding:6px 14px;font-size:.9rem}header{position:relative}
 </style></head><body>
 <div id="intro"><svg id="logo0" viewBox="0 0 120 70"></svg><b>دبیر</b><span>made by Big_Yahoo8844</span></div>
-<div class="stairs"></div>
 <header><button class="s hb" id="hb">راهنما</button><svg id="logo1" viewBox="0 0 120 70"></svg><h1>دبیر</h1><p>نویسندهٔ گفتارِ تو — فارسی و انگلیسی، با ترجمه به ۲۰ زبان</p></header>
 <main>
 <section class="card">
@@ -74,7 +72,7 @@ footer{text-align:center;padding:18px;opacity:.7;font-size:.9rem;direction:ltr}
 <p id="wr" style="font-weight:500;color:#7a1f1f"></p><div id="trs"></div>
 </section>
 </main>
-<footer>made by Big_Yahoo8844</footer><div class="stairs"></div>
+<footer>made by Big_Yahoo8844</footer>
 <div class="modal" id="cf" hidden role="dialog" aria-modal="true"><div class="card"><h3 style="margin-top:0">حذف از کتابخانه</h3>
 <p id="cft">مطمئن هستید؟ فایل صوتی و نتیجه برای همیشه پاک می‌شود.</p>
 <button class="d" id="cfy" style="background:#8a2b2b">بله، حذف کن</button><button id="cfn" style="background:var(--gold);color:#1d1a16">نه، نگه دار</button></div></div>
@@ -89,8 +87,7 @@ $('logo0').innerHTML=$('logo1').innerHTML=svg;
 const NM={en:'English',ar:'العربية',tr:'Türkçe',fr:'Français',de:'Deutsch',es:'Español',it:'Italiano',pt:'Português',ru:'Русский',zh:'中文',ja:'日本語',ko:'한국어',hi:'हिन्दी',nl:'Nederlands',pl:'Polski',uk:'Українська',id:'Indonesia',sv:'Svenska',cs:'Čeština',he:'עברית',fa:'فارسی'};
 for(const k in NM)$('tg').add(new Option(NM[k]+' ('+k+')',k));
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,v)}catch(e){return ''}};
-$('rp').value=ls('rp')||(location.hostname.endsWith('github.io')?location.hostname.split('.')[0]+'/'+location.pathname.split('/')[1]:'');
-$('tk').value=ls('tk');
+$('rp').value=ls('rp')\vert{}\vert{}(location.hostname.endsWith('github.io')?location.hostname.split('.')[0]+'/'+location.pathname.split('/')[1]:'');$('tk').value=ls('tk');
 const HOUR=3600000,CH=64*1024*1024,fa=n=>n.toLocaleString('fa-IR');
 const sz=b=>b>1e9?fa(+(b/1e9).toFixed(2))+' گیگابایت':fa(Math.round(b/1e6))+' مگابایت';
 // ---- کتابخانهٔ مرورگر (IndexedDB)
@@ -107,14 +104,10 @@ let f;
 const pick=x=>{f=x;$('fn').textContent=x?x.name+' — '+sz(x.size):'';$('est').textContent='';if(!x)return;
 const a=new Audio(),u=URL.createObjectURL(x);a.preload='metadata';a.src=u;
 a.onloadedmetadata=()=>{URL.revokeObjectURL(u);const m=a.duration/60;if(!isFinite(m))return;
-const k={small:.15,medium:.4,'large-v3':1}[$('qa').value];const e=Math.round(m*k+3);
-$('est').textContent='مدت گفتار: '+fa(Math.round(m))+' دقیقه — زمان پردازش تقریبی (حدسی): '+fa(e)+' دقیقه'+(e>330?' ؛ از حد ۶ ساعتی ربات بیشتر است، کیفیت را پایین‌تر بیاورید.':'')}};
-$('qa').onchange=()=>f&&pick(f);
-$('drop').onclick=()=>$('file').click();
-$('drop').onkeydown=e=>{if(e.key=='Enter')$('file').click()};
-$('file').onchange=e=>pick(e.target.files[0]);
+const k={small:.15,medium:.4,'large-v3':1}[$('qa').value];const e=Math.round(m*k+3);$('est').textContent='مدت گفتار: '+fa(Math.round(m))+' دقیقه — زمان پردازش تقریبی (حدسی): '+fa(e)+' دقیقه'+(e>330?' ؛ از حد ۶ ساعتی ربات بیشتر است، کیفیت را پایین‌تر بیاورید.':'')}};
+$('qa').onchange=()=>f&&pick(f);$('drop').onclick=()=>$('file').click();$('drop').onkeydown=e=>{if(e.key=='Enter')$('file').click()};$('file').onchange=e=>pick(e.target.files[0]);
 $('drop').ondragover=e=>{e.preventDefault();$('drop').classList.add('on')};
-$('drop').ondragleave=()=>$('drop').classList.remove('on');
+$('drop').ondragleave=()=>$('drop'].classList.remove('on');
 $('drop').ondrop=e=>{e.preventDefault();$('drop').classList.remove('on');pick(e.dataTransfer.files[0])};
 const st=m=>$('st').textContent=m;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -161,7 +154,7 @@ if(f.size>1024*1024*1024)return st('حجم فایل بیش از ۱ گیگابا�
 if(!REPO()||!$('tk').value)return st('مخزن و توکن را در بخش تنظیم اتصال وارد کنید.');
 ls('rp',$('rp').value);ls('tk',$('tk').value);
 const it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:f.name,size:f.size,created:Date.now(),status:'uploading',pct:0,
-opts:{targets:[...$('tg').selectedOptions].map(o=>o.value),denoise:$('dn').checked,speakers:$('sp').checked,nspeakers:+$('ns').value||null,quality:$('qa').value}};
+opts:{targets:[...$('tg').selectedOptions].map(o=>o.value),denoise:$('dn').checked,speakers:$('sp').checked,nspeakers:+$('ns').value\vert{}\vert{}null,quality:$('qa').value}};
 it.hasBlob=await bPut(it.id,f);items.unshift(it);await iPut({...it});render();
 st('آپلود شروع شد؛ تا پایان آن صفحه را باز نگه دارید. بعد از آن می‌توانید بروید.');
 upload(it,f);pick(null);$('file').value=''};
@@ -199,13 +192,10 @@ if(it.hasBlob)add('پخش صدا',async()=>{const b=await bGet(it.id);if(!b)retu
 add('حذف',()=>ask(it),'d');box.append(d)}}
 function ask(it){$('cf').hidden=false;$('cfn').focus();$('cfn').onclick=()=>$('cf').hidden=true;
 $('cfy').onclick=async()=>{$('cf').hidden=true;await iDel(it.id);items=items.filter(x=>x!==it);render()}}
-function show(j){$('res').hidden=false;$('lg').textContent='— زبان تشخیص‌داده‌شده: '+(NM[j.language]||j.language);$('t0').value=j.text;$('wr').textContent=(j.warnings||[]).join(' | ');
-$('trs').innerHTML='';for(const k in j.translations){const d=document.createElement('div');d.innerHTML=`<h3>${NM[k]}</h3><textarea id="x${k}" readonly></textarea><button class="s" data-c="x${k}">کپی</button>`;$('trs').append(d);d.querySelector('textarea').value=j.translations[k]}
-$('res').scrollIntoView({behavior:'smooth'})}
+function show(j){$('res').hidden=false;$('lg').textContent='— زبان تشخیص‌داده‌شده: '+(NM[j.language]\vert{}\vert{}j.language);$('t0').value=j.text;$('wr').textContent=(j.warnings\vert{}\vert{}[]).join(' \vert{} ');$('trs').innerHTML='';for(const k in j.translations){const d=document.createElement('div');d.innerHTML=`<h3>${NM[k]}</h3><textarea id="x${k}" readonly></textarea><button class="s" data-c="x${k}">کپی</button>`;$('trs').append(d);d.querySelector('textarea').value=j.translations[k]}$('res').scrollIntoView({behavior:'smooth'})}
 document.addEventListener('click',e=>{const c=e.target.dataset?.c;if(c){navigator.clipboard.writeText($(c).value);e.target.textContent='کپی شد'}});
 // ---- آموزش اولیه
-const tut=()=>{$('tut').hidden=false;$('tok').focus()};
-$('hb').onclick=tut;
+const tut=()=>{$('tut').hidden=false;$('tok').focus()};$('hb').onclick=tut;
 $('tok').onclick=()=>{if($('tn').checked)ls('tut','off');$('tut').hidden=true};
 addEventListener('keydown',e=>{if(e.key=='Escape'){$('cf').hidden=true;$('tut').hidden=true}});
 // ---- شروع
