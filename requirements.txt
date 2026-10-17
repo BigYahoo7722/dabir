@@ -1,0 +1,7 @@
+faster-whisper
+noisereduce
+soundfile
+numpy
+scipy
+scikit-learn
+argostranslate

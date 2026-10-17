@@ -1,0 +1,3 @@
+webrtcvad-wheels
+librosa
+tqdm
