@@ -1,4 +1,4 @@
-import json, os, glob, subprocess, re, time, traceback
+import json, os, glob, subprocess, re, time, traceback, hmac, hashlib, base64
 import numpy as np, soundfile as sf
 
 def decode(src, dst):
@@ -55,13 +55,21 @@ def load_model(name, warns):
             warns.append(f"بارگذاری مدل {n} ناموفق بود: {e}")
     raise RuntimeError("هیچ مدلی بارگذاری نشد.")
 
-def transcribe(model, wav, warns):
+def seal(out, key_hex):
+    """رمزنگاری AES-GCM نتیجه؛ فقط دارندهٔ کلید کار (کاربر) می‌تواند بخواند."""
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    iv = os.urandom(12)
+    ct = AESGCM(bytes.fromhex(key_hex)).encrypt(iv, json.dumps(out, ensure_ascii=False).encode(), None)
+    b = lambda x: base64.b64encode(x).decode()
+    return {"v": 1, "finished": out.get("finished"), "iv": b(iv), "ct": b(ct)}
+
+def transcribe(model, wav, warns, forced=None):
     """لایه ۳: تشخیص فارسی/انگلیسی + رونویسی با تلاش مجدد."""
     kw = dict(beam_size=5, condition_on_previous_text=False, temperature=[0, 0.2, 0.4], compression_ratio_threshold=2.4)
     _, info = model.transcribe(wav, vad_filter=True, **kw)
     p = dict(info.all_language_probs or [(info.language, 1.0)])
-    lang = "fa" if p.get("fa", 0) >= p.get("en", 0) else "en"
-    if p.get("fa", 0) + p.get("en", 0) < 0.3:
+    lang = forced or ("fa" if p.get("fa", 0) >= p.get("en", 0) else "en")
+    if not forced and p.get("fa", 0) + p.get("en", 0) < 0.3:
         warns.append(f"زبان گفتار احتمالاً فارسی یا انگلیسی نیست (تشخیص: {info.language}).")
     for vad in (True, False):
         it, _ = model.transcribe(wav, language=lang, vad_filter=vad, **kw)
@@ -135,11 +143,13 @@ def translate(segs, a, b, warns):
     for path in ([a, b], [a, "en", b]) if "en" not in (a, b) else ([a, b],):
         try: res = run(path)
         except Exception: res = None
-        if good(res): return fmt([{**s, "text": x or s["text"]} for s, x in zip(segs, res)])
+        if good(res):
+            res = [x or s["text"] for s, x in zip(segs, res)]
+            return fmt([{**s, "text": x} for s, x in zip(segs, res)]), res
     warns.append(f"ترجمه به {b} قابل اعتماد نبود و ارائه نشد.")
     return None
 
-def process(jd, rdir="results"):
+def process(jd, rdir="results", key=None):
     jid = os.path.basename(jd); out = {"id": jid, "warnings": []}; w = out["warnings"]
     try:
         job = json.load(open(jd + "/job.json"))
@@ -148,20 +158,20 @@ def process(jd, rdir="results"):
         wav = f"/tmp/{jid}.wav"; out["duration"] = round(decode(src, wav), 1)
         if job.get("denoise"): denoise(wav, w)
         model, used = load_model(job.get("quality", "medium"), w); out["model"] = used
-        lang, segs = transcribe(model, wav, w)
+        lang, segs = transcribe(model, wav, w, job.get("source") if job.get("source") in ("fa", "en") else None)
         if job.get("speakers"): speakers(wav, segs, job.get("nspeakers"), w)
-        out.update(language=lang, text=fmt(segs), translations={})
+        out.update(language=lang, text=fmt(segs), translations={}, tlines={}, segments=[{"s": round(x["start"], 2), "e": round(x["end"], 2), "t": x["text"], "sp": x.get("speaker")} for x in segs])
         for t in job.get("targets", []):
             if t == lang: continue
             try:
                 r = translate(segs, lang, t, w)
-                if r: out["translations"][t] = r
+                if r: out["translations"][t] = r[0]; out["tlines"][t] = r[1]
             except Exception as e:
                 w.append(f"ترجمه به {t} ناموفق بود ({e}).")
     except Exception as e:
         out["error"] = str(e); traceback.print_exc()
     out["finished"] = int(time.time())
-    json.dump(out, open(f"{rdir}/{jid}.json", "w"), ensure_ascii=False)
+    json.dump(seal(out, key) if key else out, open(f"{rdir}/{jid}.json", "w"), ensure_ascii=False)
 
 def gh(*a):
     return subprocess.run(["gh", "api", *a], capture_output=True, check=True).stdout
@@ -179,11 +189,15 @@ def main():
     assert re.fullmatch(r"[a-z0-9]+", jid)
     opts = json.loads(os.environ.get("OPTS") or "{}")
     jd = f"/tmp/job/{jid}"; os.makedirs(jd, exist_ok=True); os.makedirs("data/results", exist_ok=True)
+    sec = os.environ.get("JOB_SECRET", "")
+    key = hmac.new(sec.encode(), f"{jid}:{rel}".encode(), hashlib.sha256).hexdigest() if sec else None
     try:
+        if not key: raise ValueError("پیکربندی سرور ناقص است (JOB_SECRET).")
         fetch_audio(repo, rel, jd + "/audio.bin", opts)
-        json.dump(opts, open(jd + "/job.json", "w")); process(jd, "data/results")
+        json.dump(opts, open(jd + "/job.json", "w")); process(jd, "data/results", key)
     except Exception as e:
-        json.dump({"id": jid, "error": str(e), "warnings": [], "finished": int(time.time())}, open(f"data/results/{jid}.json", "w"), ensure_ascii=False)
+        err = {"id": jid, "error": str(e), "warnings": [], "finished": int(time.time())}
+        json.dump(seal(err, key) if key else err, open(f"data/results/{jid}.json", "w"), ensure_ascii=False)
     try: gh("-X", "DELETE", f"repos/{repo}/releases/{rel}")  # فایل صوتی از سرور پاک می‌شود
     except Exception: pass
 
