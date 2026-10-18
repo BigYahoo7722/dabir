@@ -17,3 +17,4 @@ jobs:
         env:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
+          RETAIN_SECONDS: '3900'
