@@ -67,6 +67,9 @@ textarea{max-width:100%}main{padding-inline:max(16px,env(safe-area-inset-left))}
 <div class="opt"><input type="checkbox" id="sp"><label for="sp" style="margin:0">تشخیص و برچسب‌گذاری گویندگان</label>
 <input type="number" id="ns" min="2" max="8" placeholder="تعداد (اختیاری)" style="width:130px;padding:6px"></div>
 <label for="qa">کیفیت رونویسی</label><select id="qa"><option value="small">سریع</option><option value="medium" selected>متعادل</option><option value="large-v3">دقیق‌ترین (کندتر)</option></select>
+<div class="opt"><input type="checkbox" id="cp"><label for="cp" style="margin:0">فشرده‌سازی صدا پیش از آپلود (برای اینترنت ضعیف)</label></div>
+<div id="cpo" hidden><label for="cpl">میزان فشرده‌سازی</label><select id="cpl"><option value="48">ملایم (۴۸ کیلوبیت)</option><option value="32" selected>متعادل — پیشنهادی (۳۲ کیلوبیت)</option><option value="24">حداکثر (۲۴ کیلوبیت)</option></select><small class="note" id="cpe"></small>
+<small class="note">فشرده‌سازی روی همین دستگاه انجام می‌شود و صدا را تک‌کاناله و ۱۶ کیلوهرتز می‌کند، که برای تبدیل گفتار به متن کافی است. موسیقی و کیفیت شنیداری بدتر می‌شود. اگر فشرده‌سازی کمکی نکند یا انجام نشود، فایل اصلی فرستاده می‌شود.</small></div>
 <button id="go">شروع پردازش</button>
 <div id="st" role="status"></div>
 <p class="note">حریم خصوصی: فایل صوتی در محل خصوصی موقت ذخیره و پس از پردازش از سرور پاک می‌شود. نتیجه رمزنگاری‌شده است و فقط با کلیدی که در همین مرورگر می‌ماند باز می‌شود؛ نسخهٔ سرور حدود یک ساعت پس از اتمام حذف می‌شود.</p>
@@ -117,9 +120,9 @@ const iDel=id=>Promise.all([tx('items','readwrite',s=>s.delete(id)),tx('blobs','
 let items=[],active=new Set();
 // ---- انتخاب فایل
 let f;
-const pick=x=>{f=x;$('fn').textContent=x?x.name+' — '+sz(x.size):'';$('est').textContent='';if(!x)return;
+const pick=x=>{f=x;lastMin=0;$('fn').textContent=x?x.name+' — '+sz(x.size):'';$('est').textContent='';if(!x)return;
 try{const a=new Audio(),u=URL.createObjectURL(x);a.preload='metadata';a.src=u;
-a.onloadedmetadata=()=>{URL.revokeObjectURL(u);const m=a.duration/60;if(!isFinite(m))return;
+a.onloadedmetadata=()=>{URL.revokeObjectURL(u);const m=a.duration/60;if(!isFinite(m))return;lastMin=m;updCp();
 const k={small:.15,medium:.4,'large-v3':1}[$('qa').value];const e=Math.round(m*k+3);
 $('est').textContent='مدت گفتار: '+fa(Math.round(m))+' دقیقه — زمان پردازش تقریبی (حدسی): '+fa(e)+' دقیقه'+(e>330?' ؛ از حد ۶ ساعتی ربات بیشتر است، کیفیت را پایین‌تر بیاورید.':'')}}catch(e){}};
 $('qa').onchange=()=>f&&pick(f);
@@ -129,6 +132,32 @@ $('file').onchange=e=>pick(e.target.files[0]);
 $('drop').ondragover=e=>{e.preventDefault();$('drop').classList.add('on')};
 $('drop').ondragleave=()=>$('drop').classList.remove('on');
 $('drop').ondrop=e=>{e.preventDefault();$('drop').classList.remove('on');pick(e.dataTransfer.files[0])};
+// ---- فشرده‌سازی صدا در مرورگر (پیش از آپلود)
+let lastMin=0;const CPK='dabir_compress_v1';
+function updCp(){const on=$('cp').checked;$('cpo').hidden=!on;
+if(on&&lastMin&&f){const kb=+$('cpl').value;$('cpe').textContent='حجم تقریبیِ ارسال: حدود '+sz(lastMin*60*kb/8*1000)+' (به‌جای '+sz(f.size)+')'}else $('cpe').textContent=''}
+try{const sv=JSON.parse(ls(CPK)||'{}');$('cp').checked=!!sv.on;if(['24','32','48'].includes(String(sv.k)))$('cpl').value=String(sv.k)}catch(e){}
+$('cp').onchange=$('cpl').onchange=()=>{ls(CPK,JSON.stringify({on:$('cp').checked,k:+$('cpl').value}));updCp()};updCp();
+const LAMES=['lame.min.js','https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js','https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js'];let lameP;
+function loadLame(){return lameP||(lameP=(async()=>{if(window.lamejs&&window.lamejs.Mp3Encoder)return;
+for(const u of LAMES){try{await new Promise((ok,no)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=()=>no(Error('x'));document.head.append(s)});if(window.lamejs&&window.lamejs.Mp3Encoder)return}catch(e){}}
+lameP=null;throw Error('ابزار فشرده‌سازی بارگذاری نشد')})())}
+async function encodeChunks(pcm,kbps,onp){const enc=new lamejs.Mp3Encoder(1,16000,kbps),out=[],S=1152*40;
+for(let i=0;i<pcm.length;i+=S){const b=enc.encodeBuffer(pcm.subarray(i,i+S));if(b.length)out.push(new Uint8Array(b));onp(i/pcm.length);await new Promise(r=>setTimeout(r))}
+const e=enc.flush();if(e.length)out.push(new Uint8Array(e));return out}
+async function compressAudio(file,kbps,onp){
+const AC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!AC)throw Error('مرورگر از فشرده‌سازی پشتیبانی نمی‌کند');
+await loadLame();onp(0);
+const buf=await file.arrayBuffer(),ctx=new AC(1,1,16000);
+const ab=await new Promise((ok,no)=>{const p=ctx.decodeAudioData(buf,ok,no);if(p&&p.catch)p.catch(no)});
+const ch=ab.numberOfChannels;let m=new Float32Array(ab.length);
+for(let c=0;c<ch;c++){const d=ab.getChannelData(c);for(let i=0;i<m.length;i++)m[i]+=d[i]/ch}
+if(ab.sampleRate!==16000){const r=ab.sampleRate/16000,o=new Float32Array(Math.floor(m.length/r));for(let i=0;i<o.length;i++){const p=i*r,j=Math.floor(p),q=p-j;o[i]=m[j]*(1-q)+(m[j+1]??m[j])*q}m=o}
+let pk=0;for(let i=0;i<m.length;i++){const a=Math.abs(m[i]);if(a>pk)pk=a}
+const g=pk>.001?Math.min(4,.95/pk):1,pcm=new Int16Array(m.length);
+for(let i=0;i<m.length;i++){const v=Math.max(-1,Math.min(1,m[i]*g));pcm[i]=v<0?v*32768:v*32767}
+const parts=await encodeChunks(pcm,kbps,onp);
+return new File(parts,file.name.replace(/\.[^.]+$/,'')+'-dabir.mp3',{type:'audio/mpeg'})}
 const st=m=>$('st').textContent=m;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const api=async(p,o={})=>{const r=await fetch(API+p,{cache:'no-store',...o});let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw Object.assign(Error(j.error||'خطای سرور ('+r.status+')'),{status:r.status});return j};
@@ -155,11 +184,20 @@ $('go').onclick=async()=>{
 if(!API)return st('سرور dabir هنوز پیکربندی نشده است (config.js). به مدیر سایت اطلاع دهید.');
 if(!f)return st('ابتدا یک فایل صوتی انتخاب کنید.');
 if(f.size>MAXB)return st('حجم فایل بیش از '+sz(MAXB)+' است.');
-const it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:f.name,size:f.size,created:Date.now(),status:'uploading',pct:0,sent:0,
+let up=f,note='';
+if($('cp').checked){
+if(f.size>400*1024*1024)note='فایل برای فشرده‌سازی در مرورگر بزرگ است؛ فایل اصلی ارسال می‌شود.';
+else{$('go').disabled=true;
+try{const c=await compressAudio(f,+$('cpl').value,p=>st('در حال فشرده‌سازی در مرورگر… '+fa(Math.round(p*100))+'٪ (صفحه را نبندید)'));
+if(c.size<f.size){up=c;note='حجم از '+sz(f.size)+' به '+sz(c.size)+' رسید ('+fa(Math.round((1-c.size/f.size)*100))+'٪ کمتر).'}
+else note='فشرده‌سازی کمکی نکرد؛ فایل اصلی ارسال می‌شود.'}
+catch(e){note='فشرده‌سازی ممکن نشد ('+e.message+')؛ فایل اصلی ارسال می‌شود.'}
+finally{$('go').disabled=false}}}
+const it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:f.name,size:up.size,origSize:f.size,created:Date.now(),status:'uploading',pct:0,sent:0,
 opts:{targets:[...sel],denoise:$('dn').checked,speakers:$('sp').checked,nspeakers:+$('ns').value||null,quality:$('qa').value,source:$('sr').value}};
-it.hasBlob=await bPut(it.id,f);items.unshift(it);await iPut({...it});render();
-st('آپلود شروع شد؛ تا پایان آن صفحه را باز نگه دارید. بعد از آن می‌توانید بروید.');
-upload(it,f);pick(null);$('file').value=''};
+it.hasBlob=await bPut(it.id,up);items.unshift(it);await iPut({...it});render();
+st((note?note+' ':'')+'آپلود شروع شد؛ تا پایان آن صفحه را باز نگه دارید. بعد از آن می‌توانید بروید.');
+upload(it,up);pick(null);$('file').value=''};
 addEventListener('beforeunload',e=>{if(active.size){e.preventDefault();e.returnValue=''}});
 // ---- رمزگشایی نتیجه (AES-GCM، کلید فقط نزد کاربر)
 const h2b=h=>Uint8Array.from(h.match(/../g).map(x=>parseInt(x,16))),b2b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -189,9 +227,9 @@ for(const it of items){const d=document.createElement('div');d.className='it';
 const left=it.expiresAt?Math.max(0,Math.ceil((it.expiresAt-Date.now())/60000)):0;
 const sx={uploading:'آپلود '+fa(it.pct||0)+'٪ — '+sz(it.sent||0)+' از '+sz(it.size)+' (صفحه را نبندید)',queued:it.stage||'در صف…',done:'آماده — حدود '+fa(left)+' دقیقهٔ دیگر می‌ماند',error:'ناموفق: '+(it.error||'')+(left?' — '+fa(left)+' دقیقهٔ دیگر می‌ماند':'')}[it.status];
 d.innerHTML='<b></b>'+(it.status=='uploading'?`<div class="pg"><i id="p${it.id}" style="width:${it.pct||0}%"></i></div>`:'')+'<small></small>';
-d.querySelector('b').textContent=it.name+' ('+sz(it.size)+')';d.querySelector('small').textContent=sx;
+d.querySelector('b').textContent=it.name+' ('+sz(it.size)+')'+(it.origSize&&it.origSize!==it.size?' — فشرده‌شده از '+sz(it.origSize):'');d.querySelector('small').textContent=sx;
 const add=(t,fn,c)=>{const b=document.createElement('button');b.className='s '+(c||'');b.textContent=t;b.onclick=fn;d.append(b)};
-if(it.status=='done')add('مشاهده نتیجه',()=>show(it.result));
+if(it.status=='done')add('مشاهده نتیجه',()=>show(it.result,it.opts));
 if(it.hasBlob)add('پخش صدا',async()=>{const b=await bGet(it.id);if(!b)return;const a=document.createElement('audio');a.controls=true;a.style.width='100%';a.src=URL.createObjectURL(b);d.append(a);a.play()});
 add('حذف',()=>ask(it),'d');box.append(d)}}
 function ask(it){$('cf').hidden=false;$('cfn').focus();$('cfn').onclick=()=>$('cf').hidden=true;
@@ -207,10 +245,15 @@ d.querySelector('h3').textContent=title;const ta=d.querySelector('textarea');ta.
 const r=d.querySelector('.row');const b=(t,fn)=>{const x=document.createElement('button');x.className='s';x.textContent=t;x.onclick=()=>fn(x);r.append(x)};
 b('کپی متن',x=>copy(ta,x));b('دانلود TXT',()=>dl(`dabir-${tag}.txt`,text));
 if(segs&&segs.length){b('دانلود SRT',()=>dl(`dabir-${tag}.srt`,srt(segs,lines)))}return d}
-function show(j){$('res').hidden=false;$('lg').textContent='— زبان گفتار: '+(NM[j.language]||j.language);$('wr').textContent=(j.warnings||[]).join(' | ');
+function show(j,opt){$('res').hidden=false;$('lg').textContent='— زبان گفتار: '+(NM[j.language]||j.language);
+const notes=[...(j.warnings||[])],want=(opt&&opt.targets)||[];
+if(want.includes(j.language))notes.push('زبان گفتار همان «'+(NM[j.language]||j.language)+'» است؛ ترجمه لازم نبود و متن اصلی همان نتیجه است.');
+for(const t of want)if(t!==j.language&&!(t in (j.translations||{})))notes.push('ترجمه به '+(NM[t]||t)+' انجام نشد.');
+$('wr').textContent=notes.join(' | ');
 const o=$('outs');o.innerHTML='';const sg=j.segments;
 o.append(block('متن اصلی',j.language,j.text,sg,null,j.language));
 for(const k in j.translations)o.append(block('ترجمه به '+(NM[k]||k),k,j.translations[k],sg,(j.tlines||{})[k],k));
+o.querySelectorAll('textarea').forEach(t=>{t.style.height='auto';t.style.height=(t.scrollHeight+4)+'px'});
 $('res').scrollIntoView({behavior:'smooth'})}
 // ---- آموزش اولیه
 const tut=()=>{$('tut').hidden=false;$('tok').focus()};
