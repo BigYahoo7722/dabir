@@ -1,6 +1,8 @@
 import json, os, glob, subprocess, re, time, traceback, hmac, hashlib, base64
 import numpy as np, soundfile as sf
 
+def log(m): print(f"[{time.strftime('%H:%M:%S')}] {m}", flush=True)
+
 def decode(src, dst):
     """لایه ۱: تبدیل هر فرمت (mp3/m4a/...) به wav تک‌کانال ۱۶k با چند روش جایگزین."""
     tries = [(None, []), (None, ["-err_detect", "ignore_err"]), ("mp3", []), ("mov", []), ("aac", [])]
@@ -118,7 +120,7 @@ def ensure(a, b):
     if ok(): return True
     for p in pk:
         if p.from_code == a and p.to_code == b:
-            P.install_from_path(p.download()); break
+            log(f"دانلود بستهٔ ترجمه {a} به {b}"); P.install_from_path(p.download()); break
     return ok()
 
 def tr1(t, a, b):
@@ -155,16 +157,18 @@ def process(jd, rdir="results", key=None):
         job = json.load(open(jd + "/job.json"))
         src = next(iter(glob.glob(jd + "/audio.*")), None)
         if not src: raise ValueError("فایل صوتی پیدا نشد.")
-        wav = f"/tmp/{jid}.wav"; out["duration"] = round(decode(src, wav), 1)
+        wav = f"/tmp/{jid}.wav"; out["duration"] = round(decode(src, wav), 1); log(f"صدا آماده شد: {out['duration']} ثانیه")
         if job.get("denoise"): denoise(wav, w)
-        model, used = load_model(job.get("quality", "medium"), w); out["model"] = used
-        lang, segs = transcribe(model, wav, w, job.get("source") if job.get("source") in ("fa", "en") else None)
+        model, used = load_model(job.get("quality", "medium"), w); out["model"] = used; log(f"مدل بارگذاری شد: {used}")
+        lang, segs = transcribe(model, wav, w, job.get("source") if job.get("source") in ("fa", "en") else None); log(f"رونویسی تمام شد: زبان {lang}، {len(segs)} قطعه")
         if job.get("speakers"): speakers(wav, segs, job.get("nspeakers"), w)
         out.update(language=lang, text=fmt(segs), translations={}, tlines={}, segments=[{"s": round(x["start"], 2), "e": round(x["end"], 2), "t": x["text"], "sp": x.get("speaker")} for x in segs])
         for t in job.get("targets", []):
             if t == lang: continue
             try:
+                log(f"شروع ترجمه به {t}")
                 r = translate(segs, lang, t, w)
+                log(f"ترجمه به {t} تمام شد")
                 if r: out["translations"][t] = r[0]; out["tlines"][t] = r[1]
             except Exception as e:
                 w.append(f"ترجمه به {t} ناموفق بود ({e}).")
