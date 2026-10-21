@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>دبیر</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;500;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#121110;--stone:#1d1a16;--raise:#171512;--gold:#b8893b;--champ:#d8c7a3;--ink:#efe6d2;--mut:#a89d88;--lapis:#22386b;--ok:#6fae7e;--bad:#d4675f;--ln:rgba(216,199,163,.14);--glass:rgba(29,26,22,.85);--ease:cubic-bezier(.16,1,.3,1);--spring:cubic-bezier(.34,1.56,.64,1)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:16px}
+body{margin:0;min-height:100vh;font-family:Vazirmatn,Tahoma,system-ui,sans-serif;font-weight:300;color:var(--ink);background:var(--bg);
+background-image:radial-gradient(900px 500px at 15% -10%,rgba(184,137,59,.14),transparent 60%),radial-gradient(700px 500px at 100% 0,rgba(34,56,107,.25),transparent 60%);
+padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);line-height:1.8}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:20px clamp(14px,4vw,32px) 48px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0 28px}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.brand svg{width:64px;aspect-ratio:120/70;height:auto;flex:none;fill:none;stroke:var(--gold);stroke-width:2.5}
+h1{margin:0;font-weight:800;font-size:clamp(1.7rem,5vw,2.4rem);color:var(--champ);line-height:1.2}
+.tag-line{margin:2px 0 0;color:var(--mut);font-size:.95rem}
+.ctl{display:flex;gap:8px;align-items:center}
+.lsw{display:flex;background:var(--raise);border:1px solid var(--ln);border-radius:999px;padding:3px}
+.lsw button{border:0;background:none;padding:6px 14px;border-radius:999px;cursor:pointer;color:var(--mut);transition:all .25s var(--ease);font-size:.9rem}
+.lsw button[aria-pressed=true]{background:var(--gold);color:#1d1a16;font-weight:500}
+.grid{display:grid;gap:24px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:980px){.grid{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);align-items:start}}
+.card{background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(184,137,59,.2);border-radius:20px;padding:clamp(16px,3vw,26px);box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px -8px rgba(0,0,0,.5),0 32px 64px -24px rgba(0,0,0,.6)}
+.card h2{margin:0 0 4px;font-weight:800;font-size:1.25rem;color:var(--champ)}
+.sub{color:var(--mut);font-size:.88rem;margin:0 0 14px}
+.f{margin-top:20px}.f>label,.lbl{display:block;font-weight:500;font-size:.92rem;margin-bottom:8px;color:var(--champ)}
+.dz{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:34px 18px;border-radius:16px;cursor:pointer;outline:0;--d:rgba(184,137,59,.55);
+background:linear-gradient(90deg,var(--d) 50%,transparent 0) top/16px 1.5px repeat-x,linear-gradient(90deg,var(--d) 50%,transparent 0) bottom/16px 1.5px repeat-x,linear-gradient(0deg,var(--d) 50%,transparent 0) left/1.5px 16px repeat-y,linear-gradient(0deg,var(--d) 50%,transparent 0) right/1.5px 16px repeat-y,rgba(255,255,255,.02);transition:all .3s var(--ease)}
+.dz:hover,.dz:focus-visible,.dz.drag{background-color:rgba(184,137,59,.07);animation:march 1s linear infinite;transform:translateY(-1px)}
+.dz.drag{transform:scale(1.015);--d:#d8c7a3}
+.dz:focus-visible{box-shadow:0 0 0 3px rgba(184,137,59,.4)}
+@keyframes march{to{background-position:16px 0,-16px 100%,0 -16px,100% 16px,0 0}}
+.dz svg{width:44px;height:44px;stroke:var(--gold);fill:none;stroke-width:1.6;transition:transform .4s var(--spring)}.dz:hover svg,.dz.drag svg{transform:translateY(-4px) scale(1.08)}
+.dz b{font-weight:500;font-size:1.05rem}.dz span{color:var(--mut);font-size:.85rem}
+.fc{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px 14px;background:var(--raise);border:1px solid var(--ln);border-radius:14px;animation:rise .4s var(--ease)}
+.fc[hidden]{display:none}.fc .nm{font-weight:500;overflow-wrap:anywhere;min-width:0;flex:1}.fc small{display:block;color:var(--mut)}
+.ext{font-size:.72rem;font-weight:800;letter-spacing:.05em;padding:3px 8px;border-radius:6px;background:rgba(184,137,59,.18);color:var(--champ);direction:ltr}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+select,input[type=number]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--ln);background:var(--raise);outline:0;transition:all .25s var(--ease);appearance:none;-webkit-appearance:none}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23b8893b' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 14px center}
+[dir=ltr] select{background-position:right 14px center}
+select:focus,input[type=number]:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,137,59,.3)}
+option{background:#1d1a16}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{display:inline-flex;align-items:center;gap:0;padding:8px 14px;border-radius:999px;border:1px solid var(--ln);background:rgba(255,255,255,.03);cursor:pointer;transition:transform .4s var(--spring),background .25s var(--ease),color .25s,border-color .25s,gap .3s var(--ease);font-size:.9rem}
+.tag:hover{border-color:rgba(184,137,59,.5)}.tag:active{transform:scale(.94)}
+.tag i{width:0;overflow:hidden;display:inline-flex;transition:width .3s var(--spring)}.tag i svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:3;flex:none}
+.tag[aria-pressed=true]{background:linear-gradient(135deg,#b8893b,#d8c7a3);color:#1d1a16;font-weight:500;border-color:transparent;transform:scale(1.04);gap:6px;box-shadow:0 6px 16px -6px rgba(184,137,59,.7)}
+.tag[aria-pressed=true] i{width:14px}
+.tagbar{display:flex;justify-content:space-between;align-items:center;margin-top:10px;color:var(--mut);font-size:.85rem}
+.lk{background:none;border:0;color:var(--gold);cursor:pointer;padding:4px 0;font-size:.85rem}
+.sw{display:flex;align-items:center;gap:12px;cursor:pointer;min-height:44px}.sw input{position:absolute;opacity:0;width:1px;height:1px}
+.trk{position:relative;width:42px;height:24px;border-radius:999px;background:#2a251e;border:1px solid var(--ln);flex:none;transition:background .3s var(--ease)}
+.trk::after{content:"";position:absolute;top:2px;inset-inline-start:2px;width:18px;height:18px;border-radius:50%;background:var(--champ);transition:inset-inline-start .35s var(--spring)}
+.sw input:checked+.trk{background:var(--gold)}.sw input:checked+.trk::after{inset-inline-start:20px;background:#fff}
+.sw input:focus-visible+.trk{box-shadow:0 0 0 3px rgba(184,137,59,.45)}
+.sub-opt{margin-inline-start:54px;display:flex;gap:10px;align-items:center}.sub-opt[hidden]{display:none}.sub-opt input{max-width:150px}
+.seg{display:flex;gap:4px;background:var(--raise);border:1px solid var(--ln);border-radius:12px;padding:4px}
+.seg label{flex:1;position:relative;margin:0!important}.seg input{position:absolute;opacity:0}
+.seg span{display:block;text-align:center;padding:9px 6px;border-radius:9px;cursor:pointer;font-size:.88rem;color:var(--mut);transition:all .25s var(--ease)}
+.seg input:checked+span{background:#2a251e;color:var(--champ);font-weight:500;box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 4px 10px -4px #000}
+.seg input:focus-visible+span{box-shadow:0 0 0 3px rgba(184,137,59,.45)}
+.note{font-size:.82rem;color:var(--mut);margin:8px 0 0}
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;font-weight:800;border-radius:14px;padding:13px 22px;color:#1d1a16;background:linear-gradient(180deg,#d1a24e,#b8893b);box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 10px 24px -10px rgba(184,137,59,.8);transition:all .25s var(--ease)}
+.btn:hover{filter:brightness(1.08);box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 14px 30px -10px rgba(216,199,163,.7)}
+.btn:active{transform:scale(.98)}.btn:disabled{opacity:.6;cursor:progress;filter:none}.btn.block{width:100%;margin-top:22px;padding:15px}
+.btn.sm{padding:7px 14px;font-size:.85rem;border-radius:10px;font-weight:500}
+.btn.ghost{background:rgba(255,255,255,.05);color:var(--ink);box-shadow:0 0 0 1px var(--ln) inset}.btn.ghost:hover{background:rgba(255,255,255,.09)}
+.btn.bad{background:rgba(212,103,95,.15);color:#f0a7a1;box-shadow:0 0 0 1px rgba(212,103,95,.4) inset}.btn.ok{background:rgba(111,174,126,.2);color:#a9dcb5;box-shadow:0 0 0 1px rgba(111,174,126,.5) inset}
+.btn.busy::before{content:"";width:16px;height:16px;border-radius:50%;border:2px solid rgba(29,26,22,.3);border-top-color:#1d1a16;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+:focus-visible{outline:2px solid var(--champ);outline-offset:2px}
+#st{min-height:1.6em;margin:12px 0 0;font-weight:500;font-size:.92rem;color:var(--champ)}
+.it{padding:14px;border:1px solid var(--ln);border-radius:14px;background:var(--raise);margin-top:10px;animation:rise .4s var(--ease)}
+.it .top{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}.it .nm{font-weight:500;overflow-wrap:anywhere}
+.it .sx{display:block;color:var(--mut);font-size:.84rem;margin:4px 0}
+.bd{flex:none;font-size:.72rem;font-weight:500;padding:3px 10px;border-radius:999px;background:rgba(184,137,59,.18);color:var(--champ)}
+.bd.done{background:rgba(111,174,126,.18);color:var(--ok)}.bd.error{background:rgba(212,103,95,.18);color:var(--bad)}.bd.queued{background:rgba(120,150,230,.18);color:#9db4f0}
+.pg{height:6px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;margin:8px 0}.pg i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#b8893b,#d8c7a3);transition:width .3s var(--ease)}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.it audio{width:100%;margin-top:10px}
+.empty{color:var(--mut);text-align:center;padding:26px 8px;border:1px dashed var(--ln);border-radius:14px;margin-top:12px}
+#res{margin-top:24px}
+.ob{border:1px solid var(--ln);border-radius:14px;background:var(--raise);margin-top:12px;overflow:hidden}
+.ob summary{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;list-style:none;font-weight:500}.ob summary::-webkit-details-marker{display:none}
+.ob summary::after{content:"";margin-inline-start:auto;width:8px;height:8px;border:solid var(--gold);border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform .3s var(--ease)}.ob[open] summary::after{transform:rotate(-135deg)}
+.ob .obb{padding:0 16px 16px}
+textarea{display:block;width:100%;min-height:120px;resize:vertical;padding:12px;border-radius:12px;border:1px solid var(--ln);background:#100f0d;line-height:2;outline:0;overflow:hidden}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+#wr{color:var(--bad);font-weight:500;margin:10px 0 0;font-size:.9rem}
+.modal{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);animation:fade .25s var(--ease)}.modal[hidden]{display:none}
+.modal .card{width:min(480px,100%);max-height:90vh;overflow:auto;animation:rise .4s var(--ease)}.modal ol{padding-inline-start:22px;margin:12px 0}.modal li{margin:6px 0}
+@keyframes fade{from{opacity:0}}
+footer{text-align:center;color:var(--mut);font-size:.88rem;padding:30px 0 0;direction:ltr}
+#intro{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;animation:out .9s 3.4s forwards}
+#intro svg{width:170px;aspect-ratio:120/70;height:auto;fill:none;stroke:var(--gold);stroke-width:2.5}
+#intro path,#intro circle{stroke-dasharray:400;stroke-dashoffset:400;animation:draw 2.2s .2s forwards ease-out}
+#intro b{font-size:2rem;font-weight:800;color:var(--champ);opacity:0;animation:fin 1s 1.6s forwards}
+#intro span{direction:ltr;color:var(--gold);opacity:0;animation:fin 1s 2.3s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}@keyframes fin{to{opacity:1}}@keyframes out{to{opacity:0;visibility:hidden}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}#intro{animation-delay:.2s}#intro b,#intro span{opacity:1}}
+</style></head><body>
+<div id="intro" aria-hidden="true"><svg id="logo0" viewBox="0 0 120 70"></svg><b>دبیر</b><span>made by Big_Yahoo8844</span></div>
+<div class="wrap">
+<header>
+<div class="brand"><svg id="logo1" viewBox="0 0 120 70" aria-hidden="true"></svg><div><h1 data-i18n="brand">دبیر</h1><p class="tag-line" data-i18n="tag"></p></div></div>
+<div class="ctl"><div class="lsw" role="group" aria-label="Interface language"><button data-l="fa" aria-pressed="true">فارسی</button><button data-l="en" aria-pressed="false">English</button></div><button class="btn ghost sm" id="hb" data-i18n="help"></button></div>
+</header>
+<div class="grid">
+<section class="card" aria-labelledby="h-up">
+<h2 id="h-up" data-i18n="up_t"></h2><p class="sub" data-i18n="up_s"></p>
+<div class="dz" id="drop" tabindex="0" role="button"><svg viewBox="0 0 48 48"><path d="M24 32V10M15 18l9-9 9 9"/><path d="M8 30v6a4 4 0 004 4h24a4 4 0 004-4v-6"/></svg><b data-i18n="drop_t"></b><span data-i18n="drop_s"></span></div>
+<input type="file" id="file" accept="audio/*,video/*,.mp3,.m4a" hidden>
+<div class="fc" id="fc" hidden><span class="ext" id="fx"></span><div class="nm"><span id="fn"></span><small id="fm"></small><small id="est"></small></div><button class="btn ghost sm" id="frm" data-i18n="rm"></button></div>
+<div class="f"><label for="sr" data-i18n="sr_l"></label><select id="sr"><option value="auto" data-i18n="sr_auto"></option><option value="fa" data-i18n="sr_fa"></option><option value="en" data-i18n="sr_en"></option></select></div>
+<div class="f"><span class="lbl" data-i18n="tr_l" id="trl"></span><div class="tags" id="lpl" role="group" aria-labelledby="trl"></div>
+<div class="tagbar"><span id="lps"></span><button class="lk" id="lclr" data-i18n="clr"></button></div><p class="note" data-i18n="loc"></p></div>
+<div class="f">
+<label class="sw"><input type="checkbox" id="dn"><span class="trk"></span><span data-i18n="dn"></span></label>
+<label class="sw"><input type="checkbox" id="sp"><span class="trk"></span><span data-i18n="sp"></span></label>
+<div class="sub-opt" id="spo" hidden><input type="number" id="ns" min="2" max="8" data-i18n-ph="ns_ph"></div>
+</div>
+<div class="f"><span class="lbl" data-i18n="q_l"></span><div class="seg" role="radiogroup"><label><input type="radio" name="qa" value="small"><span data-i18n="q_small"></span></label><label><input type="radio" name="qa" value="medium" checked><span data-i18n="q_medium"></span></label><label><input type="radio" name="qa" value="large-v3"><span data-i18n="q_large"></span></label></div></div>
+<div class="f"><label class="sw"><input type="checkbox" id="cp"><span class="trk"></span><span data-i18n="cp"></span></label>
+<div id="cpo" hidden><span class="lbl" data-i18n="cp_l" style="margin-top:8px"></span><div class="seg" role="radiogroup"><label><input type="radio" name="cpl" value="48"><span data-i18n="cp_48"></span></label><label><input type="radio" name="cpl" value="32" checked><span data-i18n="cp_32"></span></label><label><input type="radio" name="cpl" value="24"><span data-i18n="cp_24"></span></label></div>
+<p class="note" id="cpe"></p><p class="note" data-i18n="cp_note"></p></div></div>
+<button class="btn block" id="go" data-i18n="go"></button>
+<p id="st" role="status" aria-live="polite"></p>
+<p class="note" data-i18n="priv"></p>
+</section>
+<section class="card" aria-labelledby="h-lib"><h2 id="h-lib" data-i18n="lib_t"></h2><p class="sub" data-i18n="lib_s"></p><div id="items"></div></section>
+</div>
+<section class="card" id="res" hidden><h2><span data-i18n="res_t"></span> <small id="lg" style="font-weight:300;color:var(--mut)"></small></h2><p id="wr"></p><div id="outs"></div></section>
+<footer>dabir — made by Big_Yahoo8844</footer>
+</div>
+<div class="modal" id="cf" hidden role="dialog" aria-modal="true"><div class="card"><h2 data-i18n="cf_t"></h2><p data-i18n="cf_p"></p><div class="row"><button class="btn bad" id="cfy" data-i18n="cf_y"></button><button class="btn ghost" id="cfn" data-i18n="cf_n"></button></div></div></div>
+<div class="modal" id="tut" hidden role="dialog" aria-modal="true"><div class="card"><h2 data-i18n="tut_t"></h2><ol><li data-i18n="t1"></li><li data-i18n="t2"></li><li data-i18n="t3"></li><li data-i18n="t4"></li></ol>
+<label class="sw"><input type="checkbox" id="tn"><span class="trk"></span><span data-i18n="tut_no"></span></label><button class="btn block" id="tok" data-i18n="tut_ok"></button></div></div>
+<script src="config.js"></script>
+<script>
+const $=i=>document.getElementById(i),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
+const D={fa:{title:'دبیر | نویسندهٔ گفتارِ تو',brand:'دبیر',tag:'نویسندهٔ گفتارِ تو — فارسی و انگلیسی، با ترجمه به ۲۰ زبان',help:'راهنما',up_t:'فایل صوتی',up_s:'mp3، m4a، wav و… تا ۱ گیگابایت',drop_t:'فایل را اینجا رها کنید یا بزنید',drop_s:'فشرده‌سازی اختیاری پیش از آپلود، برای اینترنت ضعیف',rm:'حذف',
+est:'مدت گفتار: {0} دقیقه — زمان پردازش تقریبی (حدسی): {1} دقیقه',est_over:' ؛ از حد ۶ ساعتی ربات بیشتر است، کیفیت را پایین‌تر بیاورید.',sr_l:'زبان گفتار',sr_auto:'تشخیص خودکار (فارسی/انگلیسی)',sr_fa:'فارسی',sr_en:'انگلیسی',tr_l:'ترجمه به',sel:'{0} زبان انتخاب شده',nosel:'بدون ترجمه',clr:'پاک‌کردن انتخاب',loc:'انتخاب شما فقط در همین مرورگر ذخیره می‌شود و بین دستگاه‌ها همگام نمی‌شود.',
+dn:'حذف نویز و بهبود صدا',sp:'تشخیص و برچسب‌گذاری گویندگان',ns_ph:'تعداد گویندگان (اختیاری)',q_l:'کیفیت رونویسی',q_small:'سریع',q_medium:'متعادل',q_large:'دقیق‌ترین',
+cp:'فشرده‌سازی صدا پیش از آپلود (برای اینترنت ضعیف)',cp_l:'میزان فشرده‌سازی',cp_48:'ملایم ۴۸',cp_32:'متعادل ۳۲',cp_24:'حداکثر ۲۴',cp_note:'روی همین دستگاه انجام می‌شود؛ صدا تک‌کاناله و ۱۶ کیلوهرتز می‌شود که برای گفتار کافی است. کیفیت شنیداری و موسیقی بدتر می‌شود. اگر کمکی نکند یا انجام نشود، فایل اصلی فرستاده می‌شود.',cp_est:'حجم تقریبیِ ارسال: حدود {0} (به‌جای {1})',
+go:'شروع پردازش',priv:'حریم خصوصی: فایل صوتی در محل خصوصی موقت ذخیره و پس از پردازش از سرور پاک می‌شود. نتیجه رمزنگاری‌شده است و فقط با کلیدی که در همین مرورگر می‌ماند باز می‌شود؛ نسخهٔ سرور حدود یک ساعت پس از اتمام حذف می‌شود.',
+lib_t:'کتابخانهٔ من',lib_s:'هر مورد تا یک ساعت پس از اتمام در همین مرورگر می‌ماند و بعد پاک می‌شود. می‌توانید صفحه را ببندید و بعداً برگردید.',lib_empty:'هنوز چیزی اینجا نیست. یک فایل آپلود کنید.',view:'مشاهده نتیجه',play:'پخش صدا',del:'حذف',
+cf_t:'حذف از کتابخانه',cf_p:'مطمئن هستید؟ فایل صوتی و نتیجه برای همیشه پاک می‌شود.',cf_y:'بله، حذف کن',cf_n:'نه، نگه دار',tut_t:'شروع کار در چهار گام',t1:'فایل صوتی (mp3 یا m4a و…) را انتخاب کنید.',t2:'زبان‌های ترجمه و گزینه‌ها را برگزینید.',t3:'«شروع پردازش» را بزنید و صبر کنید تا آپلود کامل شود. بعد از آن می‌توانید بروید و برگردید.',t4:'هر وقت برگشتید، کارتان در «کتابخانه من» است؛ تا یک ساعت پس از اتمام می‌ماند.',tut_no:'دیگر نشان نده',tut_ok:'فهمیدم',
+res_t:'نتیجه',res_lang:'— زبان گفتار: {0}',orig:'متن اصلی',trans_to:'ترجمه به {0}',copy:'کپی متن',copied:'کپی شد ✓',copy_fail:'کپی نشد؛ متن را دستی انتخاب کنید',dl_txt:'دانلود TXT',dl_srt:'دانلود SRT',mb:'مگابایت',gb:'گیگابایت',
+b_up:'در حال آپلود',b_q:'در صف',b_done:'آماده',b_err:'ناموفق',s_up:'آپلود {0}٪ — {1} از {2} (صفحه را نبندید)',st_queued:'در صف ربات…',st_running:'ربات در حال پردازش است (رمزگشایی، تشخیص زبان، رونویسی، ترجمه)…',st_finishing:'پردازش تمام شد؛ در حال ثبت نتیجه…',st_recv:'دریافت کامل فایل توسط سرور تأیید شد؛ ارسال به صف…',s_done:'آماده — حدود {0} دقیقهٔ دیگر می‌ماند',s_err:'ناموفق: {0}',s_left:' — {0} دقیقهٔ دیگر می‌ماند',
+e_api:'سرور دبیر هنوز پیکربندی نشده است (config.js). به مدیر سایت اطلاع دهید.',e_pick:'ابتدا یک فایل صوتی انتخاب کنید.',e_big:'حجم فایل بیش از {0} است.',e_net:'آپلود قطع شد ({0}). دوباره آپلود کنید.',e_forbid:'دسترسی به این کار معتبر نیست.',e_run:'اجرای ربات شکست خورد؛ دوباره آپلود کنید.',e_noresult:'نتیجه‌ای ثبت نشد.',e_inter:'آپلود ناتمام ماند؛ دوباره آپلود کنید.',e_srv:'خطای سرور ({0})',
+started:'آپلود شروع شد؛ تا پایان آن صفحه را باز نگه دارید. بعد از آن می‌توانید بروید.',cp_prog:'در حال فشرده‌سازی در مرورگر… {0}٪ (صفحه را نبندید)',cp_big:'فایل برای فشرده‌سازی در مرورگر بزرگ است؛ فایل اصلی ارسال می‌شود.',cp_saved:'حجم از {0} به {1} رسید ({2}٪ کمتر).',cp_none:'فشرده‌سازی کمکی نکرد؛ فایل اصلی ارسال می‌شود.',cp_fail:'فشرده‌سازی ممکن نشد ({0})؛ فایل اصلی ارسال می‌شود.',cp_nosup:'مرورگر از فشرده‌سازی پشتیبانی نمی‌کند',cp_lib:'ابزار فشرده‌سازی بارگذاری نشد',
+note_same:'زبان گفتار همان «{0}» است؛ ترجمه لازم نبود و متن اصلی همان نتیجه است.',note_miss:'ترجمه به {0} انجام نشد.'},
+en:{title:'Dabir | Your speech, written',brand:'Dabir',tag:'Your speech, written — Persian & English, translated into 20 languages',help:'Guide',up_t:'Audio file',up_s:'mp3, m4a, wav and more — up to 1 GB',drop_t:'Drop a file here or click to browse',drop_s:'Optional compression before upload, for slow connections',rm:'Remove',
+est:'Speech length: {0} min — rough processing time (a guess): {1} min',est_over:' — over the bot\'s 6-hour limit; lower the quality.',sr_l:'Speech language',sr_auto:'Auto-detect (Persian/English)',sr_fa:'Persian',sr_en:'English',tr_l:'Translate to',sel:'{0} selected',nosel:'No translation',clr:'Clear selection',loc:'Your choice is saved in this browser only and does not sync across devices.',
+dn:'Noise removal & enhancement',sp:'Detect & label speakers',ns_ph:'Number of speakers (optional)',q_l:'Transcription quality',q_small:'Fast',q_medium:'Balanced',q_large:'Most accurate',
+cp:'Compress audio before upload (for slow internet)',cp_l:'Compression level',cp_48:'Gentle 48',cp_32:'Balanced 32',cp_24:'Maximum 24',cp_note:'Runs on this device; audio becomes mono 16 kHz, which is enough for speech. Listening quality and music get worse. If it doesn\'t help or fails, the original file is sent.',cp_est:'Approx. upload size: ~{0} (instead of {1})',
+go:'Start processing',priv:'Privacy: the audio is stored in a private temporary location and deleted from the server after processing. The result is encrypted and opens only with a key kept in this browser; the server copy is removed about an hour after completion.',
+lib_t:'My library',lib_s:'Each item stays in this browser for one hour after it finishes, then is deleted. You can close the page and come back later.',lib_empty:'Nothing here yet. Upload a file.',view:'View result',play:'Play audio',del:'Delete',
+cf_t:'Delete from library',cf_p:'Are you sure? The audio and result will be deleted permanently.',cf_y:'Yes, delete',cf_n:'No, keep it',tut_t:'Get started in four steps',t1:'Choose an audio file (mp3, m4a and more).',t2:'Pick translation languages and options.',t3:'Press “Start processing” and wait for the upload to finish. After that you can leave and come back.',t4:'When you return, your job is in “My library” and stays for an hour after it finishes.',tut_no:'Don\'t show again',tut_ok:'Got it',
+res_t:'Result',res_lang:'— Speech language: {0}',orig:'Original text',trans_to:'Translation to {0}',copy:'Copy text',copied:'Copied ✓',copy_fail:'Copy failed; select the text manually',dl_txt:'Download TXT',dl_srt:'Download SRT',mb:'MB',gb:'GB',
+b_up:'Uploading',b_q:'Queued',b_done:'Ready',b_err:'Failed',s_up:'Uploading {0}% — {1} of {2} (keep the page open)',st_queued:'Waiting for the bot…',st_running:'The bot is processing (decoding, language detection, transcription, translation)…',st_finishing:'Processing finished; saving the result…',st_recv:'The server confirmed the full file; sending it to the queue…',s_done:'Ready — stays about {0} more min',s_err:'Failed: {0}',s_left:' — stays {0} more min',
+e_api:'The Dabir server is not configured yet (config.js). Please tell the site admin.',e_pick:'Choose an audio file first.',e_big:'The file is larger than {0}.',e_net:'Upload interrupted ({0}). Please upload again.',e_forbid:'This job is not accessible.',e_run:'The bot run failed; please upload again.',e_noresult:'No result was recorded.',e_inter:'The upload did not finish; please upload again.',e_srv:'Server error ({0})',
+started:'Upload started; keep this page open until it finishes. After that you can leave.',cp_prog:'Compressing in your browser… {0}% (keep the page open)',cp_big:'The file is too large to compress in the browser; sending the original.',cp_saved:'Size went from {0} to {1} ({2}% smaller).',cp_none:'Compression did not help; sending the original file.',cp_fail:'Compression failed ({0}); sending the original file.',cp_nosup:'This browser does not support compression',cp_lib:'The compression tool failed to load',
+note_same:'The speech is already in “{0}”; translation was not needed and the original text is the result.',note_miss:'Translation to {0} did not complete.'}};
+const UK='dabir_ui_lang_v1';let L=ls(UK)==='en'?'en':'fa';
+const t=(k,...a)=>(D[L][k]??D.fa[k]??k).replace(/\{(\d)\}/g,(m,i)=>a[i]??'');
+const num=n=>n.toLocaleString(L=='fa'?'fa-IR':'en-US'),sz=b=>b>1e9?num(+(b/1e9).toFixed(2))+' '+t('gb'):num(Math.round(b/1e6))+' '+t('mb');
+const NM={fa:'فارسی',en:'English',ar:'العربية',tr:'Türkçe',fr:'Français',de:'Deutsch',es:'Español',pt:'Português',it:'Italiano',ru:'Русский',zh:'中文',ja:'日本語',ko:'한국어',hi:'हिन्दी',ur:'اردو',bn:'বাংলা',id:'Indonesia',nl:'Nederlands',pl:'Polski',uk:'Українська',el:'Ελληνικά'};
+const RTL=new Set(['fa','ar','ur','he']),HOUR=36e5;
+const API=(window.DABIR_API||'').replace(/\/+$/,''),MAXB=window.DABIR_MAX_BYTES||1073741824;
+const svg='<circle cx="60" cy="40" r="11"/><path d="M49 40H8l10-8M49 40H14l10 8M71 40h41l-10-8M71 40h35l-10 8M60 51v14M52 66l8-6 8 6"/>';
+$('logo0').innerHTML=$('logo1').innerHTML=svg;
+// ---- زبان‌های مقصد: برچسب‌های تعاملی
+const LK='dabir_target_languages_v1';
+function loadLangs(){const r=ls(LK);if(r===null)return['fa'];try{const a=JSON.parse(r);if(Array.isArray(a)&&a.every(x=>x in NM))return a}catch(e){}return['fa']}
+let sel=new Set(loadLangs());
+const CK='<i><svg viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5"/></svg></i>';
+function updTags(){$$('#lpl .tag').forEach(b=>b.setAttribute('aria-pressed',sel.has(b.dataset.c)));$('lps').textContent=sel.size?t('sel',num(sel.size)):t('nosel')}
+for(const k in NM){const b=document.createElement('button');b.type='button';b.className='tag';b.dataset.c=k;b.innerHTML=CK+'<span></span>';b.lastChild.textContent=NM[k];
+b.onclick=()=>{sel.has(k)?sel.delete(k):sel.add(k);ls(LK,JSON.stringify([...sel]));updTags()};$('lpl').append(b)}
+$('lclr').onclick=()=>{sel.clear();ls(LK,'[]');updTags()};
+// ---- کتابخانهٔ مرورگر (IndexedDB)
+const DB=new Promise((ok,no)=>{const r=indexedDB.open('nabeshte',1);r.onupgradeneeded=()=>{r.result.createObjectStore('items',{keyPath:'id'});r.result.createObjectStore('blobs')};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
+const tx=async(s,m,fn)=>{const d=await DB;return new Promise((ok,no)=>{const x=d.transaction(s,m);const q=fn(x.objectStore(s));x.oncomplete=()=>ok(q&&q.result);x.onerror=()=>no(x.error);x.onabort=()=>no(x.error)})};
+const iPut=i=>tx('items','readwrite',s=>s.put(i)).catch(()=>{}),iAll=()=>tx('items','readonly',s=>s.getAll());
+const bPut=(id,b)=>tx('blobs','readwrite',s=>s.put(b,id)).then(()=>1).catch(()=>0),bGet=id=>tx('blobs','readonly',s=>s.get(id)).catch(()=>null);
+const iDel=id=>Promise.all([tx('items','readwrite',s=>s.delete(id)),tx('blobs','readwrite',s=>s.delete(id))]).catch(()=>{});
+let items=[],active=new Set(),f=null,lastMin=0,last=null;
+// ---- انتخاب فایل
+const ext=n=>((n.split('.').pop()||'').slice(0,4)||'AUDIO').toUpperCase();
+function updEst(){if(!f||!lastMin){$('est').textContent='';return}const k={small:.15,medium:.4,'large-v3':1}[qv()],e=Math.round(lastMin*k+3);$('est').textContent=t('est',num(Math.round(lastMin)),num(e))+(e>330?t('est_over'):'')}
+const qv=()=>$$('input[name=qa]').find(r=>r.checked).value,cv=()=>+$$('input[name=cpl]').find(r=>r.checked).value;
+function pick(x){f=x;lastMin=0;$('fc').hidden=!x;$('est').textContent='';if(!x){updCp();return}
+$('fn').textContent=x.name;$('fx').textContent=ext(x.name);$('fm').textContent=sz(x.size);
+try{const a=new Audio(),u=URL.createObjectURL(x);a.preload='metadata';a.src=u;a.onloadedmetadata=()=>{URL.revokeObjectURL(u);const m=a.duration/60;if(!isFinite(m))return;lastMin=m;updEst();updCp()}}catch(e){}updCp()}
+$$('input[name=qa]').forEach(r=>r.onchange=updEst);
+$('frm').onclick=e=>{e.stopPropagation();pick(null);$('file').value=''};
+const dz=$('drop');dz.onclick=()=>$('file').click();dz.onkeydown=e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();$('file').click()}};
+$('file').onchange=e=>e.target.files[0]&&pick(e.target.files[0]);
+dz.ondragover=e=>{e.preventDefault();dz.classList.add('drag')};dz.ondragleave=()=>dz.classList.remove('drag');
+dz.ondrop=e=>{e.preventDefault();dz.classList.remove('drag');e.dataTransfer.files[0]&&pick(e.dataTransfer.files[0])};
+$('sp').onchange=()=>$('spo').hidden=!$('sp').checked;
+// ---- فشرده‌سازی صدا در مرورگر (پیش از آپلود)
+const CPK='dabir_compress_v1';
+function updCp(){const on=$('cp').checked;$('cpo').hidden=!on;$('cpe').textContent=on&&lastMin&&f?t('cp_est',sz(lastMin*60*cv()/8*1000),sz(f.size)):''}
+try{const sv=JSON.parse(ls(CPK)||'{}');$('cp').checked=!!sv.on;const r=$$('input[name=cpl]').find(x=>x.value==String(sv.k));if(r)r.checked=true}catch(e){}
+const svCp=()=>{ls(CPK,JSON.stringify({on:$('cp').checked,k:cv()}));updCp()};$('cp').onchange=svCp;$$('input[name=cpl]').forEach(r=>r.onchange=svCp);
+const LAMES=['lame.min.js','https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js','https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js'];let lameP;
+function loadLame(){return lameP||(lameP=(async()=>{if(window.lamejs&&window.lamejs.Mp3Encoder)return;
+for(const u of LAMES){try{await new Promise((ok,no)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=()=>no(Error('x'));document.head.append(s)});if(window.lamejs&&window.lamejs.Mp3Encoder)return}catch(e){}}
+lameP=null;throw Error(t('cp_lib'))})())}
+async function encodeChunks(pcm,kbps,onp){const enc=new lamejs.Mp3Encoder(1,16000,kbps),out=[],S=1152*40;
+for(let i=0;i<pcm.length;i+=S){const b=enc.encodeBuffer(pcm.subarray(i,i+S));if(b.length)out.push(new Uint8Array(b));onp(i/pcm.length);await new Promise(r=>setTimeout(r))}
+const e=enc.flush();if(e.length)out.push(new Uint8Array(e));return out}
+async function compressAudio(file,kbps,onp){
+const AC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!AC)throw Error(t('cp_nosup'));
+await loadLame();onp(0);
+const buf=await file.arrayBuffer(),ctx=new AC(1,1,16000);
+const ab=await new Promise((ok,no)=>{const p=ctx.decodeAudioData(buf,ok,no);if(p&&p.catch)p.catch(no)});
+const ch=ab.numberOfChannels;let m=new Float32Array(ab.length);
+for(let c=0;c<ch;c++){const d=ab.getChannelData(c);for(let i=0;i<m.length;i++)m[i]+=d[i]/ch}
+if(ab.sampleRate!==16000){const r=ab.sampleRate/16000,o=new Float32Array(Math.floor(m.length/r));for(let i=0;i<o.length;i++){const p=i*r,j=Math.floor(p),q=p-j;o[i]=m[j]*(1-q)+(m[j+1]??m[j])*q}m=o}
+let pk=0;for(let i=0;i<m.length;i++){const a=Math.abs(m[i]);if(a>pk)pk=a}
+const g=pk>.001?Math.min(4,.95/pk):1,pcm=new Int16Array(m.length);
+for(let i=0;i<m.length;i++){const v=Math.max(-1,Math.min(1,m[i]*g));pcm[i]=v<0?v*32768:v*32767}
+return new File(await encodeChunks(pcm,kbps,onp),file.name.replace(/\.[^.]+$/,'')+'-dabir.mp3',{type:'audio/mpeg'})}
+// ---- شبکه و آپلود تکه‌ای (تا ۱ گیگ؛ هر تکه تا ۶ بار تلاش مجدد)
+const st=m=>$('st').textContent=m,sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const api=async(p,o={})=>{const r=await fetch(API+p,{cache:'no-store',...o});let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw Object.assign(Error(j.error||t('e_srv',r.status)),{status:r.status});return j};
+const put=(url,key,blob,onp)=>new Promise((ok,no)=>{const x=new XMLHttpRequest();x.open('PUT',url);x.setRequestHeader('X-Key',key);
+x.upload.onprogress=e=>onp(e.loaded);x.onload=()=>x.status<300?ok():no(Error('HTTP '+x.status));x.onerror=()=>no(Error('net'));x.send(blob)});
+const rec=async(it,p)=>{Object.assign(it,p);await iPut({...it});render()};
+const fail=(it,m,...a)=>rec(it,{status:'error',expiresAt:Date.now()+HOUR,...(m in D.fa?{ek:m,ea:a,error:''}:{ek:'',error:m})});
+async function upload(it,file){
+active.add(it.id);
+try{
+const j=await api('/api/jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({size:file.size,opts:it.opts})});
+await rec(it,{jid:j.id,rel:j.rel,key:j.key,parts:j.parts});
+const q='?rel='+j.rel;let done=0;
+for(let k=0;k<j.parts;k++){const blob=file.slice(k*j.chunk,(k+1)*j.chunk);let ok=false;
+for(let a=0;a<6&&!ok;a++){try{await put(`${API}/api/jobs/${j.id}/parts/${k}${q}`,j.key,blob,l=>{it.sent=done+l;it.pct=Math.round(it.sent/file.size*100);render(true)});ok=true}catch(e){if(a==5)throw e;await sleep(2000*(a+1))}}
+done+=blob.size}
+await rec(it,{pct:100,sent:file.size,status:'queued',stage:'recv'});
+await api(`/api/jobs/${j.id}/start${q}`,{method:'POST',headers:{'Content-Type':'application/json','X-Key':j.key},body:JSON.stringify({size:file.size,parts:j.parts,opts:it.opts})});
+await rec(it,{status:'queued',stage:'queued'})
+}catch(e){await(e.message.startsWith('HTTP')||e.message=='net'?fail(it,'e_net',e.message):fail(it,e.message))}
+finally{active.delete(it.id)}}
+$('go').onclick=async()=>{
+if(!API)return st(t('e_api'));if(!f)return st(t('e_pick'));if(f.size>MAXB)return st(t('e_big',sz(MAXB)));
+let up=f,note='';
+if($('cp').checked){
+if(f.size>400*1024*1024)note=t('cp_big');
+else{$('go').disabled=true;$('go').classList.add('busy');
+try{const c=await compressAudio(f,cv(),p=>st(t('cp_prog',num(Math.round(p*100)))));
+if(c.size<f.size){up=c;note=t('cp_saved',sz(f.size),sz(c.size),num(Math.round((1-c.size/f.size)*100)))}else note=t('cp_none')}
+catch(e){note=t('cp_fail',e.message)}
+finally{$('go').disabled=false;$('go').classList.remove('busy')}}}
+const it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:f.name,size:up.size,origSize:f.size,created:Date.now(),status:'uploading',pct:0,sent:0,
+opts:{targets:[...sel],denoise:$('dn').checked,speakers:$('sp').checked,nspeakers:+$('ns').value||null,quality:qv(),source:$('sr').value}};
+it.hasBlob=await bPut(it.id,up);items.unshift(it);await iPut({...it});render();
+st((note?note+' ':'')+t('started'));upload(it,up);pick(null);$('file').value=''};
+addEventListener('beforeunload',e=>{if(active.size){e.preventDefault();e.returnValue=''}});
+// ---- رمزگشایی نتیجه (AES-GCM، کلید فقط نزد کاربر)
+const h2b=h=>Uint8Array.from(h.match(/../g).map(x=>parseInt(x,16))),b2b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function unseal(env,key){if(!env.ct)return env;const k=await crypto.subtle.importKey('raw',h2b(key),'AES-GCM',false,['decrypt']);
+return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:b2b(env.iv)},k,b2b(env.ct))))}
+// ---- پیگیری وضعیت
+async function check(it){
+try{const r=await api(`/api/jobs/${it.jid}?rel=${it.rel}`,{headers:{'X-Key':it.key}});
+if(r.state=='done'){const j=await unseal(r.payload,it.key),fin=j.finished?j.finished*1000:Date.now();
+return rec(it,j.error?{status:'error',error:j.error,ek:'',expiresAt:fin+HOUR}:{status:'done',result:j,expiresAt:fin+HOUR,stage:''})}
+if(r.state=='failed')return fail(it,'e_run');
+if(r.state=='finishing'&&(it.miss=(it.miss||0)+1)>8)return fail(it,'e_noresult');
+if(['queued','running','finishing'].includes(r.state)&&it.stage!==r.state)rec(it,{stage:r.state})}catch(e){if(e.status==403)fail(it,'e_forbid')}}
+async function tick(){const now=Date.now();
+for(const it of [...items])if(it.expiresAt&&now>it.expiresAt){await iDel(it.id);items=items.filter(x=>x!==it)}
+for(const it of items)if(it.status=='queued'&&it.jid&&!active.has(it.id))await check(it);render()}
+// ---- کتابخانه
+function render(light){const box=$('items');
+if(light){for(const it of items){const e=document.getElementById('p'+it.id);if(e){e.style.width=it.pct+'%';e.parentNode.nextSibling.textContent=t('s_up',num(it.pct),sz(it.sent||0),sz(it.size))}}return}
+if(!items.length){box.innerHTML='<div class="empty"></div>';box.firstChild.textContent=t('lib_empty');return}
+box.innerHTML='';
+for(const it of items){const d=document.createElement('div');d.className='it';
+const left=it.expiresAt?Math.max(0,Math.ceil((it.expiresAt-Date.now())/6e4)):0,errTxt=it.ek?t(it.ek,...(it.ea||[])):it.error;
+const sx={uploading:t('s_up',num(it.pct||0),sz(it.sent||0),sz(it.size)),queued:t('st_'+(it.stage||'queued')),done:t('s_done',num(left)),error:t('s_err',errTxt)+(left?t('s_left',num(left)):'')}[it.status];
+d.innerHTML='<div class="top"><span class="nm"></span><span class="bd"></span></div>'+(it.status=='uploading'?`<div class="pg"><i id="p${it.id}" style="width:${it.pct||0}%"></i></div>`:'')+'<small class="sx"></small><div class="acts"></div>';
+d.querySelector('.nm').textContent=it.name+' ('+sz(it.size)+')'+(it.origSize&&it.origSize!==it.size?' — '+t('cp_saved',sz(it.origSize),sz(it.size),num(Math.round((1-it.size/it.origSize)*100))):'');
+const bd=d.querySelector('.bd');bd.textContent=t({uploading:'b_up',queued:'b_q',done:'b_done',error:'b_err'}[it.status]);bd.classList.add(it.status);d.querySelector('.sx').textContent=sx;
+const A=d.querySelector('.acts'),add=(k,fn,c)=>{const b=document.createElement('button');b.className='btn sm '+(c||'ghost');b.textContent=t(k);b.onclick=fn;A.append(b)};
+if(it.status=='done')add('view',()=>show(it.result,it.opts),'');
+if(it.hasBlob)add('play',async()=>{const b=await bGet(it.id);if(!b)return;const a=document.createElement('audio');a.controls=true;a.src=URL.createObjectURL(b);d.append(a);a.play()});
+add('del',()=>ask(it),'bad');box.append(d)}}
+function ask(it){$('cf').hidden=false;$('cfn').focus();$('cfn').onclick=()=>$('cf').hidden=true;
+$('cfy').onclick=async()=>{$('cf').hidden=true;await iDel(it.id);items=items.filter(x=>x!==it);render()}}
+// ---- نتیجه: کپی، TXT، SRT
+const ts=(s,c)=>{const m=Math.round(s*1000),p=(n,l=2)=>String(n).padStart(l,'0');return `${p(Math.floor(m/36e5))}:${p(Math.floor(m/6e4)%60)}:${p(Math.floor(m/1e3)%60)}${c}${p(m%1000,3)}`};
+const srt=(segs,lines)=>segs.map((s,i)=>`${i+1}\n${ts(s.s,',')} --> ${ts(s.e,',')}\n${(s.sp?'['+s.sp+'] ':'')+(lines?lines[i]:s.t)}\n`).join('\n');
+const dl=(name,txt)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+txt],{type:'text/plain;charset=utf-8'}));a.download=name;document.body.append(a);a.click();a.remove()};
+async function copy(ta,btn){let ok=false;try{await navigator.clipboard.writeText(ta.value);ok=true}catch(e){try{ta.select();ok=document.execCommand('copy')}catch(e2){}}
+btn.textContent=t(ok?'copied':'copy_fail');btn.classList.toggle('ok',ok);setTimeout(()=>{btn.textContent=t('copy');btn.classList.remove('ok')},2500)}
+const fit=ta=>{ta.style.height='auto';ta.style.height=(ta.scrollHeight+4)+'px'};
+function block(title,code,text,segs,lines,tag,open){const d=document.createElement('details');d.className='ob';d.open=open;
+d.innerHTML='<summary><span></span><span class="bd"></span></summary><div class="obb"><textarea readonly></textarea><div class="row"></div></div>';
+const s=d.querySelectorAll('summary span');s[0].textContent=title;s[1].textContent=code;const ta=d.querySelector('textarea');ta.value=text;ta.dir=RTL.has(code)?'rtl':'ltr';ta.lang=code;
+const r=d.querySelector('.row'),b=(k,fn)=>{const x=document.createElement('button');x.className='btn sm ghost';x.textContent=t(k);x.onclick=()=>fn(x);r.append(x)};
+b('copy',x=>copy(ta,x));b('dl_txt',()=>dl(`dabir-${tag}.txt`,text));if(segs&&segs.length)b('dl_srt',()=>dl(`dabir-${tag}.srt`,srt(segs,lines)));
+d.ontoggle=()=>d.open&&fit(ta);return d}
+function show(j,opt){last=[j,opt];$('res').hidden=false;$('lg').textContent=t('res_lang',NM[j.language]||j.language);
+const notes=[...(j.warnings||[])],want=(opt&&opt.targets)||[];
+if(want.includes(j.language))notes.push(t('note_same',NM[j.language]||j.language));
+for(const c of want)if(c!==j.language&&!(c in (j.translations||{})))notes.push(t('note_miss',NM[c]||c));
+$('wr').textContent=notes.join(' | ');
+const o=$('outs');o.innerHTML='';const sg=j.segments;
+o.append(block(t('orig'),j.language,j.text,sg,null,j.language,true));
+for(const k in j.translations)o.append(block(t('trans_to',NM[k]||k),k,j.translations[k],sg,(j.tlines||{})[k],k,true));
+$$('textarea',o).forEach(fit);$('res').scrollIntoView({behavior:'smooth'})}
+// ---- زبان رابط، آموزش، شروع
+function applyLang(){document.documentElement.lang=L;document.documentElement.dir=L=='fa'?'rtl':'ltr';document.title=t('title');
+$$('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));$$('[data-i18n-ph]').forEach(e=>e.placeholder=t(e.dataset.i18nPh));
+$$('.lsw button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l==L));updTags();updCp();updEst();render();if(last&&!$('res').hidden){const y=scrollY;show(...last);scrollTo(0,y)}}
+$$('.lsw button').forEach(b=>b.onclick=()=>{L=b.dataset.l;ls(UK,L);applyLang()});
+const tut=()=>{$('tut').hidden=false;$('tok').focus()};$('hb').onclick=tut;
+$('tok').onclick=()=>{if($('tn').checked)ls('tut','off');$('tut').hidden=true};
+addEventListener('keydown',e=>{if(e.key=='Escape'){$('cf').hidden=true;$('tut').hidden=true}});
+applyLang();
+(async()=>{try{items=(await iAll()).sort((a,b)=>b.created-a.created)}catch(e){items=[]}
+for(const it of items)if(it.status=='uploading'){it.status='error';it.ek='e_inter';it.ea=[];it.expiresAt=Date.now()+HOUR;iPut({...it})}
+await tick();setInterval(tick,15000);if(ls('tut')!=='off')setTimeout(tut,4200)})();
+</script></body></html>
