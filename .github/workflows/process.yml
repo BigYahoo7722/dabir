@@ -1,0 +1,78 @@
+name: dabir-process
+run-name: process ${{ inputs.id }}
+on:
+  workflow_dispatch:
+    inputs:
+      id: {required: true}
+      rel: {required: true}
+      opts: {required: false, default: '{}'}
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: {ref: jobs, path: data}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11', cache: pip}
+      - run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/huggingface
+            ~/.local/share/argos-translate
+          key: models-v2
+      - run: pip install -r requirements.txt
+      - name: Does this job need the Persian specialist model?
+        id: need
+        env:
+          OPTS: ${{ inputs.opts }}
+          FA_MODEL: ${{ vars.FA_MODEL || 'givia/whisper-large-v3-turbo-persian' }}
+        run: |
+          python3 - >> "$GITHUB_OUTPUT" <<'PY'
+          import json, os, hashlib
+          o = json.loads(os.environ.get("OPTS") or "{}")
+          print("fa=" + ("true" if o.get("source") == "fa" and o.get("quality") == "large-v3" else "false"))
+          print("key=fa-ct2-v1-" + hashlib.sha1(os.environ["FA_MODEL"].encode()).hexdigest()[:10])
+          PY
+      - uses: actions/cache@v4
+        if: steps.need.outputs.fa == 'true'
+        id: facache
+        with:
+          path: ~/ct2-fa
+          key: ${{ steps.need.outputs.key }}
+      - name: Convert the Persian model to CTranslate2 (first time only)
+        if: steps.need.outputs.fa == 'true' && steps.facache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        env:
+          FA_MODEL: ${{ vars.FA_MODEL || 'givia/whisper-large-v3-turbo-persian' }}
+        run: |
+          pip install -q "transformers>=4.40" sentencepiece
+          pip install -q torch --extra-index-url https://download.pytorch.org/whl/cpu
+          rm -rf ~/ct2-fa
+          ct2-transformers-converter --model "$FA_MODEL" --output_dir ~/ct2-fa --copy_files tokenizer.json preprocessor_config.json --quantization int8 --force && touch ~/ct2-fa/ok || rm -rf ~/ct2-fa
+      - name: Speaker deps (optional)
+        continue-on-error: true
+        run: |
+          pip install -r requirements-speakers.txt
+          pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
+          pip install resemblyzer --no-deps
+      - run: python tests/selftest.py
+      - run: python process.py
+        env:
+          JID: ${{ inputs.id }}
+          REL: ${{ inputs.rel }}
+          OPTS: ${{ inputs.opts }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          JOB_SECRET: ${{ secrets.JOB_SECRET }}
+      - name: Commit result
+        working-directory: data
+        run: |
+          git config user.name bot && git config user.email bot@users.noreply.github.com
+          git add -A results && git commit -m "result" || exit 0
+          for i in 1 2 3 4 5 6; do git pull --rebase -X theirs && git push && exit 0; sleep $((RANDOM%10+3)); done
+          exit 1
