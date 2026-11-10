@@ -1,7 +1,6 @@
 // dabir API: پروکسی امن بین سایت و GitHub. توکن و JOB_SECRET فقط اینجا (Secret کلودفلر) هستند.
 const CH = 64 * 1024 * 1024;
 const LANGS = new Set("fa en ar tr fr de es pt it ru zh ja ko hi ur bn id nl pl uk el".split(" "));
-const QUAL = new Set(["small", "medium", "large-v3"]);
 const te = new TextEncoder();
 const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
 export async function sign(secret, msg) {
@@ -13,10 +12,8 @@ export function clean(o = {}, max = 21) {
   const n = Number(o.nspeakers);
   return {
     targets: [...new Set((Array.isArray(o.targets) ? o.targets : []).filter(t => LANGS.has(t)))].slice(0, max),
-    denoise: !!o.denoise, speakers: !!o.speakers,
+    denoise: !!o.denoise, speakers: !!o.speakers, notes: !!o.notes,
     nspeakers: Number.isInteger(n) && n >= 2 && n <= 8 ? n : null,
-    quality: QUAL.has(o.quality) ? o.quality : "medium",
-    source: ["fa", "en"].includes(o.source) ? o.source : "auto",
   };
 }
 const gh = (env, path, init = {}) => fetch("https://api.github.com/repos/" + env.REPO + path, {
@@ -33,12 +30,22 @@ export default {
   },
 };
 
+// محدودیت ساخت کار برای هر IP در ساعت. نیازمند KV با نام RL؛ بدون آن فقط سقف سراسری MAX_ACTIVE اعمال می‌شود (در README آمده).
+export async function overLimit(env, ip) {
+  if (!env.RL || !ip) return false;
+  const k = "rl:" + ip + ":" + Math.floor(Date.now() / 3600000), n = Number(await env.RL.get(k)) || 0, lim = Number(env.MAX_JOBS_PER_HOUR) || 6;
+  if (n >= lim) return true;
+  await env.RL.put(k, String(n + 1), { expirationTtl: 7200 });
+  return false;
+}
+
 async function route(req, env, J) {
   const u = new URL(req.url), p = u.pathname.replace(/\/+$/, ""), max = Number(env.MAX_BYTES) || 1073741824;
   if (req.method === "POST" && p === "/api/jobs") {
     const b = await req.json().catch(() => ({}));
     if (!Number.isInteger(b.size) || b.size < 1) return J({ error: "حجم فایل نامعتبر است." }, 400);
     if (b.size > max) return J({ error: "حجم فایل بیش از حد مجاز است." }, 413);
+    if (await overLimit(env, req.headers.get("CF-Connecting-IP"))) return J({ error: "تعداد درخواست‌های این ساعت زیاد بود؛ بعداً دوباره تلاش کنید." }, 429);
     const act = await gh(env, "/releases?per_page=100");
     if (act.ok && (await act.json()).filter(r => r.draft && r.tag_name.startsWith("job-")).length >= (Number(env.MAX_ACTIVE) || 20)) return J({ error: "ظرفیت پردازش فعلاً پر است؛ چند دقیقه بعد تلاش کنید." }, 429);
     const br = await gh(env, "/git/ref/heads/jobs");
