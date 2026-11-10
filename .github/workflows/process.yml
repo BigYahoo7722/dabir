@@ -6,6 +6,7 @@ on:
       id: {required: true}
       rel: {required: true}
       opts: {required: false, default: '{}'}
+# حداقل دسترسی پیش‌فرض. GITHUB_TOKEN فقط برای Release موقت (خواندن/پیشرفت/حذف) و ثبت نتیجه نوشتن می‌خواهد.
 permissions:
   contents: write
 jobs:
@@ -13,47 +14,49 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 350
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with: {ref: jobs, path: data}
-      - uses: actions/setup-python@v5
+      # Actionها به SHA کامل قفل شده‌اند (v4.3.1 / v5.6.0 / v4.3.0)
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with: {persist-credentials: false}
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with: {ref: jobs, path: data, persist-credentials: false}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with: {python-version: '3.11', cache: pip}
       - run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: |
             ~/.cache/huggingface
             ~/.local/share/argos-translate
-          key: models-v2
+          key: models-v3
       - run: pip install -r requirements.txt
-      - name: Does this job need the Persian specialist model?
-        id: need
-        env:
-          OPTS: ${{ inputs.opts }}
-          FA_MODEL: ${{ vars.FA_MODEL || 'givia/whisper-large-v3-turbo-persian' }}
+      - name: Options
+        id: opt
+        env: {OPTS: '${{ inputs.opts }}', ASR_FA_REPO: '${{ vars.ASR_FA_REPO }}'}
         run: |
           python3 - >> "$GITHUB_OUTPUT" <<'PY'
           import json, os, hashlib
           o = json.loads(os.environ.get("OPTS") or "{}")
-          print("fa=" + ("true" if o.get("source") == "fa" and o.get("quality") == "large-v3" else "false"))
-          print("key=fa-ct2-v1-" + hashlib.sha1(os.environ["FA_MODEL"].encode()).hexdigest()[:10])
+          print("notes=" + ("true" if o.get("notes") else "false"))
+          r = os.environ.get("ASR_FA_REPO", "")
+          print("fa=" + ("true" if r else "false")); print("key=fa-ct2-v2-" + hashlib.sha1(r.encode()).hexdigest()[:10])
           PY
-      - uses: actions/cache@v4
-        if: steps.need.outputs.fa == 'true'
+      # مدل تخصصی فارسی فقط با تنظیم صریح متغیر مخزن ASR_FA_REPO فعال می‌شود (پیش‌فرض: خاموش؛ نیازمند ارزیابی با صدای خودتان)
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        if: steps.opt.outputs.fa == 'true'
         id: facache
-        with:
-          path: ~/ct2-fa
-          key: ${{ steps.need.outputs.key }}
-      - name: Convert the Persian model to CTranslate2 (first time only)
-        if: steps.need.outputs.fa == 'true' && steps.facache.outputs.cache-hit != 'true'
+        with: {path: ~/ct2-fa, key: '${{ steps.opt.outputs.key }}'}
+      - name: Convert the Persian specialist model (first time only; failure is reported to the user)
+        if: steps.opt.outputs.fa == 'true' && steps.facache.outputs.cache-hit != 'true'
         continue-on-error: true
-        env:
-          FA_MODEL: ${{ vars.FA_MODEL || 'givia/whisper-large-v3-turbo-persian' }}
+        env: {ASR_FA_REPO: '${{ vars.ASR_FA_REPO }}', ASR_FA_REV: '${{ vars.ASR_FA_REV }}'}
         run: |
           pip install -q "transformers>=4.40" sentencepiece
           pip install -q torch --extra-index-url https://download.pytorch.org/whl/cpu
           rm -rf ~/ct2-fa
-          ct2-transformers-converter --model "$FA_MODEL" --output_dir ~/ct2-fa --copy_files tokenizer.json preprocessor_config.json --quantization int8 --force && touch ~/ct2-fa/ok || rm -rf ~/ct2-fa
+          ct2-transformers-converter --model "$ASR_FA_REPO" ${ASR_FA_REV:+--revision "$ASR_FA_REV"} --output_dir ~/ct2-fa --copy_files tokenizer.json preprocessor_config.json --quantization int8 --force && touch ~/ct2-fa/ok || rm -rf ~/ct2-fa
+      - name: Lecture-notes deps (only when requested)
+        if: steps.opt.outputs.notes == 'true'
+        run: pip install -r requirements-notes.txt
       - name: Speaker deps (optional)
         continue-on-error: true
         run: |
@@ -61,18 +64,35 @@ jobs:
           pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
           pip install resemblyzer --no-deps
       - run: python tests/selftest.py
-      - run: python process.py
+      # --- سه مرحله با دسترسی جدا: ورودی غیرمعتمد (صوت) هیچ‌وقت JOB_SECRET را نمی‌بیند ---
+      - name: 1 · fetch audio
+        run: python process.py
+        env: {STAGE: fetch, JID: '${{ inputs.id }}', REL: '${{ inputs.rel }}', OPTS: '${{ inputs.opts }}', REPO: '${{ github.repository }}', GH_TOKEN: '${{ github.token }}'}
+      - name: 2 · transcribe (no secret)
+        run: python process.py
         env:
+          STAGE: process
           JID: ${{ inputs.id }}
           REL: ${{ inputs.rel }}
           OPTS: ${{ inputs.opts }}
           REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ github.token }}
-          JOB_SECRET: ${{ secrets.JOB_SECRET }}
+          GH_TOKEN: ${{ github.token }}   # فقط برای گزارش پیشرفت روی Release
+          FA_MODEL_DIR: ${{ steps.opt.outputs.fa == 'true' && '~/ct2-fa' || '' }}
+          ASR_FA_REPO: ${{ vars.ASR_FA_REPO }}
+          ASR_FA_REV: ${{ vars.ASR_FA_REV }}
+          ASR_GENERAL_REV: ${{ vars.ASR_GENERAL_REV }}
+          NOTES_GGUF_REPO: ${{ vars.NOTES_GGUF_REPO }}
+          NOTES_GGUF_FILE: ${{ vars.NOTES_GGUF_FILE }}
+          NOTES_GGUF_REV: ${{ vars.NOTES_GGUF_REV }}
+      - name: 3 · seal result + delete release
+        run: python process.py
+        env: {STAGE: seal, JID: '${{ inputs.id }}', REL: '${{ inputs.rel }}', OPTS: '${{ inputs.opts }}', REPO: '${{ github.repository }}', GH_TOKEN: '${{ github.token }}', JOB_SECRET: '${{ secrets.JOB_SECRET }}'}
       - name: Commit result
         working-directory: data
+        env: {GH_TOKEN: '${{ github.token }}'}
         run: |
           git config user.name bot && git config user.email bot@users.noreply.github.com
           git add -A results && git commit -m "result" || exit 0
-          for i in 1 2 3 4 5 6; do git pull --rebase -X theirs && git push && exit 0; sleep $((RANDOM%10+3)); done
+          URL="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          for i in 1 2 3 4 5 6; do git pull --rebase -X theirs "$URL" jobs && git push "$URL" HEAD:jobs && exit 0; sleep $((RANDOM%10+3)); done
           exit 1
