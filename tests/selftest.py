@@ -14,5 +14,5 @@ os.rename(f"{d}/audio.mp3", f"{d}/audio.bin"); assert p.decode(f"{d}/audio.bin",
 open(d + "/bad.mp3", "wb").write(b"xx" * 500)
 try: p.decode(d + "/bad.mp3", d + "/y.wav"); raise SystemExit("bad file accepted")
 except ValueError as e: print("corrupt rejected ok")
-assert p.fmt(p.clean([{"text": " a", "speaker": 1}, {"text": "b", "speaker": 1}, {"text": "c", "speaker": 2}])) == "[گوینده 1] a b\n[گوینده 2] c"
+assert p.fmt([{"text": "a", "speaker": 1}, {"text": "b", "speaker": 1}, {"text": "c", "speaker": 2}]) == "[گوینده 1] a b\n[گوینده 2] c"
 print("ALL OK")

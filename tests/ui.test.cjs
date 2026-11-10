@@ -30,14 +30,14 @@ const bigFile=(w,n='x.m4a')=>new w.File([new Uint8Array(130*1024*1024)],n);
  t('default target = Persian only',JSON.stringify(pressed(a.d))==='["فارسی"]');
  t('21 interactive language tags (buttons)',a.d.querySelectorAll('#lpl button.tag').length===21);
  t('counter shows 1 selected',/۱/.test(a.d.getElementById('lps').textContent));
- const pre=[...a.d.querySelectorAll('.pre')],langsBefore=JSON.stringify(pressed(a.d));
- t('two preset cards, none active at start',pre.length===2&&pre.every(b=>b.getAttribute('aria-checked')==='false'));
- pre[0].click();const g=i=>a.d.getElementById(i);
- t('Persian preset sets every control',g('sr').value==='fa'&&a.d.querySelector('input[name=qa]:checked').value==='large-v3'&&!g('dn').checked&&!g('sp').checked&&!g('cp').checked&&pre[0].getAttribute('aria-checked')==='true'&&/اعمال شد/.test(g('pdone').textContent));
- g('dn').checked=true;g('dn').onchange();t('manual change clears the preset highlight',pre[0].getAttribute('aria-checked')==='false'&&g('pdone').textContent==='');
- g('sp').checked=true;g('sp').onchange();g('cp').checked=true;g('cp').onchange();pre[1].click();
- t('English preset overrides manual choices',g('sr').value==='en'&&!g('dn').checked&&!g('sp').checked&&g('spo').hidden&&!g('cp').checked&&JSON.parse(a.w.localStorage.getItem('dabir_compress_v1')).on===false&&pre[1].getAttribute('aria-checked')==='true');
- t('presets leave translation languages untouched',JSON.stringify(pressed(a.d))===langsBefore);
+  const g=i=>a.d.getElementById(i),langsBefore=JSON.stringify(pressed(a.d));
+  t('no model/quality/source/preset controls remain',!a.d.querySelector('.pre')&&!g('sr')&&!a.d.querySelector('input[name=qa]')&&!g('pdone'));
+  t('notes switch exists, off by default, with explanation',!!g('nt')&&g('nt').checked===false&&/جزوه/.test(a.d.querySelector('[data-i18n=nt_note]').textContent));
+
+
+
+
+
  const tags=[...a.d.querySelectorAll('#lpl .tag')];tags[1].onclick();tags[0].onclick();
  t('toggle saved to dabir_target_languages_v1',a.w.localStorage.getItem('dabir_target_languages_v1')==='["en"]'&&JSON.stringify(pressed(a.d))==='["English"]');
  a.d.getElementById('lclr').onclick();t('clear selection',pressed(a.d).length===0&&a.w.localStorage.getItem('dabir_target_languages_v1')==='[]');
@@ -48,7 +48,7 @@ const bigFile=(w,n='x.m4a')=>new w.File([new Uint8Array(130*1024*1024)],n);
  t('default UI is Persian rtl',a.d.documentElement.dir==='rtl'&&a.d.documentElement.lang==='fa'&&a.d.getElementById('go').textContent==='شروع پردازش');
  a.d.querySelector('.lsw button[data-l="en"]').click();
  t('switch to English: ltr + translated + saved',a.d.documentElement.dir==='ltr'&&a.d.documentElement.lang==='en'&&a.d.getElementById('go').textContent==='Start processing'&&a.w.localStorage.getItem('dabir_ui_lang_v1')==='en'&&a.d.title.startsWith('Dabir'));
- t('preset cards translated',/most accurate/.test(a.d.querySelector('.pre').textContent)&&/Applied/.test(a.d.getElementById('pdone').textContent));
+  t('notes option translated',/Lecture notes/.test(a.d.querySelector('[data-i18n=nt]').textContent));
  t('English counter',/selected|No translation/.test(a.d.getElementById('lps').textContent));
  let en=await boot(null,{dabir_ui_lang_v1:'en'});t('English restored after reload',en.d.documentElement.dir==='ltr'&&en.d.getElementById('go').textContent==='Start processing');
  a.d.querySelector('.lsw button[data-l="fa"]').click();t('switch back to Persian',a.d.documentElement.dir==='rtl'&&a.d.getElementById('go').textContent==='شروع پردازش');
@@ -58,10 +58,10 @@ const bigFile=(w,n='x.m4a')=>new w.File([new Uint8Array(130*1024*1024)],n);
  t('placeholders match between languages',Object.keys(D.fa).every(k=>ph(D.fa[k])===ph(D.en[k])));
  t('every data-i18n key exists',[...a.d.querySelectorAll('[data-i18n],[data-i18n-ph]')].every(x=>(x.dataset.i18n||x.dataset.i18nPh)in D.fa));
  const ES=(d,o)=>a.w.eval('estSecs('+d+','+JSON.stringify(o)+')');
- t('estimate grows with duration, quality and translations',ES(1200,{source:'fa',quality:'small',targets:[]})>ES(600,{source:'fa',quality:'small',targets:[]})&&ES(600,{source:'fa',quality:'large-v3',targets:[]})>ES(600,{source:'fa',quality:'small',targets:[]})&&ES(600,{source:'fa',quality:'small',targets:['en','de']})>ES(600,{source:'fa',quality:'small',targets:[]}));
- t('same-language target adds no translation time',ES(600,{source:'fa',quality:'small',targets:['fa']})===ES(600,{source:'fa',quality:'small',targets:[]}));
- a.w.eval('learn({opts:{source:"fa",quality:"large-v3"},qAt:Date.now()-900000},{duration:600,finished:Math.floor(Date.now()/1000),timing:{transcribe:300,total:400}})');
- const cl=JSON.parse(a.w.localStorage.getItem('dabir_calib_v1'));t('measured run recalibrates estimates (rtf and setup)',Math.abs(cl.rtf.fa-.7)<.01&&cl.setup===325);
+  t('estimate grows with duration, notes and translations',ES(1200,{targets:[]})>ES(600,{targets:[]})&&ES(600,{notes:true,targets:[]})>ES(600,{targets:[]})&&ES(600,{targets:['en','de']})>ES(600,{targets:[]}));
+  t('curOpts carries notes flag and no legacy options',(()=>{g('nt').checked=true;const o=a.w.eval('curOpts()');g('nt').checked=false;return o.notes===true&&!('quality' in o)&&!('source' in o)})());
+  a.w.eval('learn({opts:{},qAt:Date.now()-900000},{duration:600,finished:Math.floor(Date.now()/1000),timing:{transcribe:300,total:400}})');
+  const cl=JSON.parse(a.w.localStorage.getItem('dabir_calib_v1'));t('measured run recalibrates estimates (rtf and setup)',Math.abs(cl.rtf.asr-(.5*.7+1.2*.3))<.2||Math.abs(cl.rtf.asr-.5)<.2,JSON.stringify(cl));
  t('live ETA counts down from the bot report',Math.abs(a.w.eval('remain({pg:{e:600,t:Math.floor(Date.now()/1000)}}).s')-600)<3&&a.w.eval('remain({pg:{e:600,t:1}}).s')===0);
  t('ETA text says "taking longer" when estimate is exceeded',/بیشتر/.test(a.w.eval('etaText({status:"queued",est:100,qAt:Date.now()-500000})')));
  // آپلود ۱۳۰ مگابایت از طریق Worker جعلی
@@ -92,6 +92,9 @@ const bigFile=(w,n='x.m4a')=>new w.File([new Uint8Array(130*1024*1024)],n);
  t('notes: same-language + missing translation',/ترجمه لازم نبود/.test(r.d.getElementById('wr').textContent)&&/Deutsch/.test(r.d.getElementById('wr').textContent));
  t('SRT builder correct',r.w.eval('srt([{s:0,e:1.5,t:"a",sp:null}],null)').startsWith('1\n00:00:00,000 --> 00:00:01,500\na'));
  t('result has copy, TXT and SRT buttons',r.d.querySelectorAll('#outs details')[0].querySelectorAll('button').length===3);
+  let rn=await boot();rn.w.eval('show('+JSON.stringify({...res,notes:'# جزوهٔ جلسه\\n- تست',warnings:[]})+',{targets:[]})');
+  const nd=[...rn.d.querySelectorAll('#outs details')];t('notes shown as separate block with Markdown download',nd.length===3&&/جزوهٔ آموزشی/.test(nd[1].textContent)&&/Markdown/.test(nd[1].textContent)&&nd[1].querySelector('textarea').value.includes('تست'));
+  t('no notes block when notes absent',r.d.querySelectorAll('#outs details').length===2&&!/جزوه/.test(r.d.getElementById('outs').textContent));
  r.d.querySelector('.lsw button[data-l="en"]').click();t('result re-rendered in English',/Original text/.test(r.d.getElementById('outs').textContent)&&/Download SRT/.test(r.d.getElementById('outs').textContent));
  r.w.navigator.clipboard={writeText:async()=>{throw Error('denied')}};r.w.document.execCommand=()=>false;
  const btn=r.d.querySelector('#outs button');await r.w.eval('copy')(r.d.querySelector('textarea'),btn);t('clipboard failure reported honestly',/Copy failed/.test(btn.textContent));

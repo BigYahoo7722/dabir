@@ -1,5 +1,5 @@
 // تست منطق Worker با GitHub جعلی (شبیه‌سازی) + سازگاری رمزنگاری پایتون↔مرورگر (واقعی)
-import worker, { sign } from "../worker/src/index.js";
+import worker, { sign, overLimit } from "../worker/src/index.js";
 import { execSync } from "node:child_process";
 let pass = 0, fail = 0;
 const t = (n, c) => { c ? pass++ : (fail++, console.log("FAIL", n)); console.log(c ? "ok  " : "FAIL", n); };
@@ -22,10 +22,11 @@ globalThis.fetch = async (url, init = {}) => {
 };
 const O = { Origin: "https://site.test" };
 const call = (p, i = {}) => worker.fetch(new Request("https://w.test" + p, { ...i, headers: { ...O, ...(i.headers || {}) } }), env);
-let r = await call("/api/jobs", { method: "POST", body: JSON.stringify({ size: 130e6, opts: { targets: ["fa", "xx", "en"], quality: "evil", speakers: 1 } }) });
+let r = await call("/api/jobs", { method: "POST", body: JSON.stringify({ size: 130e6, opts: { targets: ["fa", "xx", "en"], quality: "evil", source: "fa", notes: 1, speakers: 1 } }) });
 const job = await r.json();
 t("create job", r.status === 200 && /^[0-9a-f]{16}$/.test(job.id) && job.parts === 2 && job.rel === 4242);
-t("opts sanitized", JSON.stringify(job.opts.targets) === '["fa","en"]' && job.opts.quality === "medium" && job.opts.speakers === true);
+t("opts sanitized", JSON.stringify(job.opts.targets) === '["fa","en"]' && job.opts.speakers === true && job.opts.notes === true);
+t("legacy quality/source options dropped", !("quality" in job.opts) && !("source" in job.opts));
 t("key == HMAC", job.key === await sign("js", `${job.id}:4242`));
 t("jobs branch created", calls.some(c => c.startsWith("POST /git/refs")));
 t("too large rejected", (await call("/api/jobs", { method: "POST", body: JSON.stringify({ size: 2e9 }) })).status === 413);
@@ -33,6 +34,11 @@ t("bad size rejected", (await call("/api/jobs", { method: "POST", body: JSON.str
 t("foreign origin blocked", (await worker.fetch(new Request("https://w.test/api/jobs", { method: "POST", headers: { Origin: "https://evil.test" }, body: "{}" }), env)).status === 403);
 releases = [{ draft: true, tag_name: "job-a" }, { draft: true, tag_name: "job-b" }];
 t("capacity limit 429", (await call("/api/jobs", { method: "POST", body: JSON.stringify({ size: 10 }) })).status === 429); releases = [];
+const kv = new Map(), RL = { get: async k => kv.get(k) ?? null, put: async (k, v) => { kv.set(k, v); } };
+const e2 = { ...env, RL, MAX_JOBS_PER_HOUR: "2" };
+const rl = []; for (let i = 0; i < 3; i++) rl.push(await overLimit(e2, "1.2.3.4"));
+t("per-IP limit blocks 3rd job in the hour", JSON.stringify(rl) === "[false,false,true]" && !(await overLimit(e2, "9.9.9.9")));
+t("no KV binding -> limit disabled (global cap still applies)", (await overLimit(env, "1.2.3.4")) === false);
 const q = `?rel=${job.rel}`, H = { "X-Key": job.key };
 t("wrong key 403", (await call(`/api/jobs/${job.id}${q}`, { headers: { "X-Key": "0".repeat(64) } })).status === 403);
 t("other job's key 403", (await call(`/api/jobs/${"a".repeat(16)}${q}`, { headers: H })).status === 403);
