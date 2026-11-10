@@ -1,0 +1,16 @@
+name = "dabir-api"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+REPO = "BigYahoo7722/dabir"
+BRANCH = "main"
+ALLOWED_ORIGIN = "https://bigyahoo7722.github.io"
+MAX_BYTES = "1073741824"
+MAX_ACTIVE = "20"
+MAX_JOBS_PER_HOUR = "6"
+
+# برای محدودیت نرخ هر IP: wrangler kv namespace create dabir-rl و سپس خط‌های زیر را فعال کنید
+# [[kv_namespaces]]
+# binding = "RL"
+# id = "<ID>"
